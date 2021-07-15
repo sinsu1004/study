@@ -1,0 +1,64 @@
+.boxdraw {
+  background: rgba(56, 135, 190, 0.1);
+  border: 2px solid #3887be;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+}
+.geocoder {
+  position: absolute;
+  z-index: 1;
+  width: 50%;
+  left: 50%;
+  margin-left: -25%;
+  top: 10px;
+}
+.mapboxgl-ctrl-geocoder {
+  min-width: 100%;
+}
+#map {
+  margin-top: 75px;
+}
+body {
+  margin: 0;
+  padding: 0;
+}
+#map {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 90%;
+  height: 80%;
+}
+
+#zoom {
+  display: block;
+  position: absolute;
+  margin: 20px auto;
+  width: 10%;
+  height: 40px;
+  padding: 10px;
+  border: none;
+  border-radius: 3px;
+  font-size: 12px;
+  text-align: center;
+  color: #fff;
+  background: #ee8a65;
+}
+
+#zoom2 {
+  display: block;
+  position: absolute;
+  margin: 70px auto;
+  width: 10%;
+  height: 40px;
+  padding: 10px;
+  border: none;
+  border-radius: 3px;
+  font-size: 12px;
+  text-align: center;
+  color: #fff;
+  background: rebeccapurple;
+}
