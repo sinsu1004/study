@@ -7,12 +7,14 @@ const pool=new Pool({
     password: '5067',
     port:5432
 })
+
+
+
 const roder =(request,response) => {
-    pool.query('select row_to_json(fc) as test2 from (select \'FeatureCollection\' AS type, json_build_object(\'type\',\'name\',\'properties\', json_build_object(\'name\',\'EPSG:4326\')) as crs, array_to_json(array_agg(f)) as features from (select \'Feature\' as type,  st_asGeoJson(st_setsrid((geom::geometry),4326),100)::json as geometry from test2 ) as f) as fc ',(error, results) =>{
+    pool.query('select row_to_json(fc) as test2 from (select \'FeatureCollection\' AS type, json_build_object(\'type\',\'name\',\'properties\', json_build_object(\'name\',\'EPSG:4326\')) as crs, array_to_json(array_agg(f)) as features from (select \'Feature\' as type,  st_asGeoJson(st_setsrid((geom::geometry),4326),100)::json as geometry , id AS ID from test2 ) as f) as fc ',(error, results) =>{
         response.status(200).json(results.rows);
     });
 }
-
 const test = (request, response) => {
         
         pool.query('select st_astext((st_dump(geom)).geom) AS geom FROM gis_osm_natural_a_free_1', (error, results) => {
@@ -77,7 +79,7 @@ const save2=(request,response)=>{
     
 }
 const loding=(request,response) =>{
-    pool.query('select row_to_json(fc) as squareGrid from (select \'FeatureCollection\' AS type, json_build_object(\'type\',\'name\',\'properties\', json_build_object(\'name\',\'EPSG:3857\')) as crs, array_to_json(array_agg(f)) as features from (select \'Feature\' as type,  st_asGeoJson(st_setsrid((info::geometry),4326),100)::json as geometry from squregrid2 ) as f) as fc ',(error, results) =>{
+    pool.query('select row_to_json(fc) as squareGrid from (select \'FeatureCollection\' AS type, json_build_object(\'type\',\'name\',\'properties\', json_build_object(\'name\',\'EPSG:3857\')) as crs, array_to_json(array_agg(f)) as features from (select \'Feature\' as type,  st_asGeoJson(st_setsrid((info::geometry),4326),100)::json as geometry , id AS ID from squregrid2 ) as f) as fc ',(error, results) =>{
         response.status(200).json(results.rows);
     });
 } 

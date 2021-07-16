@@ -40,7 +40,6 @@ $.ajax({
   success:function(a){
     test=a;
   }
-
 })
 test=test[0];
 test=test["test2"];
@@ -59,113 +58,71 @@ document.getElementById('zoom').addEventListener('click',function(){
       );
   });
   size.length=0;
-
 });
-
 document.getElementById('zoom2').addEventListener('click',function(){
-  $.ajax({
-    url:'http://localhost:5000/test/t/t',
-    type:'POST',
-    datatype:'json',
-    async:false,
-    success:function(tr){
-       road=tr;
-
-    }
-
-  })
-  road=road[0];
-  road=road["squaregrid"];
-  
- 
+  size.forEach(item=>{
+    map.setFeatureState(
+      { source: 'test', id: item },
+      { hover: false }
+      );
+  });
+  size.length=0;
 });
-
+function pluselayer(data,sourcename,lineid,linecolor,fillid,fillcolor){
+  map.addSource(sourcename, {
+    'type': "geojson",
+    'data':data
+  });
+  map.addLayer({
+      'id': lineid,
+      'type': 'line',
+      'source': sourcename,
+      'paint': {
+          'line-color': linecolor,
+      }});
+  map.addLayer({
+    'id': fillid,
+    'type': 'fill',
+    'source': sourcename,
+    'layout': {},
+    'paint': {
+    'fill-color': fillcolor,
+    'fill-opacity': [
+    'case',
+    ['boolean', ['feature-state', 'hover'], false],
+    1,
+    0.5
+    ]
+    }
+  });
+};
+function clickevent(layerid,sources){
+  map.on('click',layerid,function(e){
+    
+  
+    hoveredStateId = e.features[0].id;
+    size.push(hoveredStateId);
+    map.setFeatureState(
+    { source: sources, id: hoveredStateId },
+    { hover: true }
+    ); 
+  });
+  
+  };
 
 
 
 
 
 map.on('load', function() {
-  map.addSource('grid', {
-    'type': "geojson",
-    'data':squareGrid
-  });
-  map.addLayer({
-      'id': 'grid',
-      'type': 'line',
-      'source': 'grid',
-      'paint': {
-          'line-color': 'gray',
-      }
-  });
-  map.addSource('test', {
-    'type': "geojson",
-    'data':test
-  });
-  map.addLayer({
-      'id': 'test',
-      'type': 'line',
-      'source': 'test',
-      'paint': {
-          'line-color': 'red',
-      }
-  });
-  map.addLayer({
-    'id': 'test-fill',
-    'type': 'fill',
-    'source': 'test',
-    'layout': {},
-    'paint': {
-    'fill-color': 'red',
-    'fill-opacity': [
-    'case',
-    ['boolean', ['feature-state', 'hover'], false],
-    1,
-    0.5
-    ]
-    }
-  });
-  
+  pluselayer(test,'test','test','red','test-fill','red');
+  clickevent('test-fill','test');
 
-  map.addLayer({
-    'id': 'grid-fill',
-    'type': 'fill',
-    'source': 'grid',
-    'layout': {},
-    'paint': {
-    'fill-color': '#627BC1',
-    'fill-opacity': [
-    'case',
-    ['boolean', ['feature-state', 'hover'], false],
-    1,
-    0.5
-    ]
-    }
-  });
- 
-
-  map.on('click','grid-fill',function(e){
-      
-    
-    hoveredStateId = e.features[0].id;
-    size.push(hoveredStateId);
-    map.setFeatureState(
-    { source: 'grid', id: hoveredStateId },
-    { hover: true }
-    );
-
-
-  });
-
-
+  pluselayer(squareGrid,'grid','grid','gray','grid-fill','#627BC1');
+  clickevent('grid-fill','grid');
+});
 
   
-
-
-  });
-
-
-
 var geocoder = new MapboxGeocoder({
 accessToken: mapboxgl.accessToken,
 mapboxgl: mapboxgl,
