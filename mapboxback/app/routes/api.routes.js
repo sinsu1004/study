@@ -4,13 +4,14 @@ module.exports = app =>{
     var router = require("express").Router();
 
     
-    router.get('/:id',api.getHorrorById);
+    router.post('/test',api.test);
     router.post('/',api.getHorrorByAll);
-    router.get('/t/:id',api.getHorrorById2);
+    router.post('/t/t',api.getHorrorById2);
     router.post('/save',api.save);
     router.post('/sq',api.squareGrid);
     router.post('/ss',api.save2);
     router.post('/loding',api.loding);
+    router.post('/loder',api.roder)
 
     app.use('/test',router)
 

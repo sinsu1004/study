@@ -17,7 +17,7 @@ for(let i=0;i<squareGrid.features.length;i++){
  }
 }
   if(l!=4){
-  s+=",";
+  s+=","; 
   }
 }
 s+="))";

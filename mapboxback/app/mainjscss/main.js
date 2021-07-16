@@ -10,8 +10,8 @@ style: "mapbox://styles/shinseunghun/ckqqa24e22qdh17q0k9fh7bnj", // style URL
 center: [126.98885600860226, 37.56229581976776], // starting position [lng, lat]
 zoom:7, // starting zoom
 });
-
-
+var road;
+var test;
 var hoveredStateId = null;
 
 //map 불러오는 부분
@@ -19,7 +19,7 @@ var hoveredStateId = null;
 
 
 // 데이터 베이스에서 네모 호출
-/*
+
 $.ajax({
   url:'http://localhost:5000/test/loding',
   type:'POST',
@@ -32,44 +32,18 @@ $.ajax({
 squareGrid=squareGrid[0];
 squareGrid=squareGrid["squaregrid"];
 
-*/
-
-var bbox = [126.3, 34.7 ,129.5, 38.3];
-var cellSide = 50;
-var options = 'kilometers';
-var squareGrid = turf.squareGrid(bbox, cellSide, options);
-let a=[];
-for(let i=0;i<squareGrid.features.length;i++){
-  
-  squareGrid["features"][i].id=i;
-
- var s=squareGrid["features"][i].geometry.type;
- s+="((";
- for(let l=0;l<5;l++){
- for(let k=0; k<2;k++){
- s+=squareGrid["features"][i].geometry.coordinates[0][l][k];
- if(k!=1){
-  s+=" ";
- }
-}
-  if(l!=4){
-  s+=",";
+$.ajax({
+  url:'http://localhost:5000/test/loder',
+  type:'POST',
+  datatype:'json',
+  async:false,
+  success:function(a){
+    test=a;
   }
-}
-s+="))";
-a.push(s);
- 
-}
 
-for(let i=0;i<a.length;i++){
-  $.ajax({
-    url:'http://localhost:5000/test/ss',
-    data:a[i],
-    //async:false,
-    type:'POST',
-  })
-  console.log(i);
-}
+})
+test=test[0];
+test=test["test2"];
 
 
 
@@ -90,52 +64,85 @@ document.getElementById('zoom').addEventListener('click',function(){
 
 document.getElementById('zoom2').addEventListener('click',function(){
   $.ajax({
-    url:'http://localhost:5000/test/t/25',
-    type:'GET',
+    url:'http://localhost:5000/test/t/t',
+    type:'POST',
+    datatype:'json',
+    async:false,
     success:function(tr){
-      var road=tr;
+       road=tr;
 
     }
+
   })
-
-
+  road=road[0];
+  road=road["squaregrid"];
+  
+ 
 });
+
+
+
 
 
 
 map.on('load', function() {
   map.addSource('grid', {
-      'type': "geojson",
-      'data':squareGrid
+    'type': "geojson",
+    'data':squareGrid
   });
- 
-
-  // map.addLayer({
-  //     'id': 'grid',
-  //     'type': 'line',
-  //     'source': 'grid',
-  //     'paint': {
-  //         'line-color': 'gray',
-  //     }
-  // });
-
-  // map.addLayer({
-  //   'id': 'grid-fill',
-  //   'type': 'fill',
-  //   'source': 'grid',
-  //   'layout': {},
-  //   'paint': {
-  //   'fill-color': '#627BC1',
-  //   'fill-opacity': [
-  //   'case',
-  //   ['boolean', ['feature-state', 'hover'], false],
-  //   1,
-  //   0.5
-  //   ]
-  //   }
-  // });
+  map.addLayer({
+      'id': 'grid',
+      'type': 'line',
+      'source': 'grid',
+      'paint': {
+          'line-color': 'gray',
+      }
+  });
+  map.addSource('test', {
+    'type': "geojson",
+    'data':test
+  });
+  map.addLayer({
+      'id': 'test',
+      'type': 'line',
+      'source': 'test',
+      'paint': {
+          'line-color': 'red',
+      }
+  });
+  map.addLayer({
+    'id': 'test-fill',
+    'type': 'fill',
+    'source': 'test',
+    'layout': {},
+    'paint': {
+    'fill-color': 'red',
+    'fill-opacity': [
+    'case',
+    ['boolean', ['feature-state', 'hover'], false],
+    1,
+    0.5
+    ]
+    }
+  });
   
 
+  map.addLayer({
+    'id': 'grid-fill',
+    'type': 'fill',
+    'source': 'grid',
+    'layout': {},
+    'paint': {
+    'fill-color': '#627BC1',
+    'fill-opacity': [
+    'case',
+    ['boolean', ['feature-state', 'hover'], false],
+    1,
+    0.5
+    ]
+    }
+  });
+ 
 
   map.on('click','grid-fill',function(e){
       
@@ -151,7 +158,10 @@ map.on('load', function() {
   });
 
 
-   
+
+  
+
+
   });
 
 
