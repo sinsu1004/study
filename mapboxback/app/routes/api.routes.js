@@ -11,7 +11,8 @@ module.exports = app =>{
     router.post('/sq',api.squareGrid);
     router.post('/ss',api.save2);
     router.post('/loding',api.loding);
-    router.post('/loder',api.roder)
+    router.post('/loder',api.roder);
+    router.post('/data',api.datatest);
 
     app.use('/test',router)
 

@@ -12,6 +12,7 @@ zoom:7, // starting zoom
 });
 var road;
 var test;
+var db;
 var hoveredStateId = null;
 
 //map 불러오는 부분
@@ -31,6 +32,7 @@ $.ajax({
 })
 squareGrid=squareGrid[0];
 squareGrid=squareGrid["squaregrid"];
+ 
 
 $.ajax({
   url:'http://localhost:5000/test/loder',
@@ -44,6 +46,17 @@ $.ajax({
 test=test[0];
 test=test["test2"];
 
+$.ajax({
+  url:'http://localhost:5000/test/data',
+  type:'POST',
+  datatype:'json',
+  async:false,
+  success:function(a){
+    db=a;
+  }
+})
+db=db[0];
+db=db["db"];
 
 
 
@@ -120,6 +133,9 @@ map.on('load', function() {
 
   pluselayer(squareGrid,'grid','grid','gray','grid-fill','#627BC1');
   clickevent('grid-fill','grid');
+
+  pluselayer(db,'db','db','red','db-fill','red');
+  clickevent('db-fill','db');
 });
 
   
