@@ -159,7 +159,7 @@ map.on('load', function() {
     'type': 'symbol',
     'source': "db",
     'layout': {
-        "text-field": "db",
+        "text-field": ['get', 'f2'],
         "text-size":10
     },
     'paint': {
