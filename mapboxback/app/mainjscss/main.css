@@ -52,13 +52,22 @@ body {
   display: block;
   position: absolute;
   margin: 70px auto;
-  width: 10%;
+  width: 245.188px;
   height: 40px;
   padding: 10px;
+  top: 600px;
   border: none;
   border-radius: 3px;
   font-size: 12px;
   text-align: center;
   color: #fff;
   background: rebeccapurple;
+}
+#note {
+  background-color: rgb(255, 255, 255);
+  position: absolute;
+  display: flex;
+  width: 245.188px;
+  height: 566px;
+  top: 150px;
 }

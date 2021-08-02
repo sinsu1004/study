@@ -1,3 +1,4 @@
+const { polygon } = require('@turf/turf');
 const { response, request } = require('express');
 const {Pool}= require('pg');
 const pool=new Pool({
@@ -7,6 +8,32 @@ const pool=new Pool({
     password: '5067',
     port:5432
 })
+const buydata=(request,response)=>{
+    var data=request.body;
+    var td=data["data"];
+    console.log(td);
+    pool.query('select buy from aa where pagename=$1',[td],(error, results) => {
+        response.status(200).json(results.rows);
+        
+        if(results.rows[0]["buy"]==true){
+            console.log("성공");
+        }
+        });
+}
+
+const tiledata =(request,response)=>{
+    var data=request.body;
+    var test=data["data"];
+    var test2=data["pn"];
+    
+    for(let i=0;i<test.length;i++){
+        pool.query('update aa set pagenumber=$1,buy=TRUE where pagename=$2',[test2,test[i]], (error, results) => {
+            
+
+            });
+    }
+    
+}
 
 const datatest =(request,response) =>{
     pool.query('select row_to_json(fc) as db from (select \'FeatureCollection\' AS type, json_build_object(\'type\',\'name\',\'properties\', json_build_object(\'name\',\'EPSG:4326\')) as crs, array_to_json(array_agg(f)) as features from (select \'Feature\' as type,  st_asGeoJson(st_setsrid(((st_dump(geom)).geom::geometry),4326),100)::json as geometry ,row_to_json((gid, pagename)) AS properties,gid AS ID  from aa ) as f) as fc',(error, results) =>{
@@ -98,4 +125,7 @@ module.exports ={
     loding,
     roder,
     datatest,
+    tiledata,
+    buydata,
+    
 };

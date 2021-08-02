@@ -17,6 +17,7 @@ var db;
 var dbtest;
 var hoveredStateId = null;
 var gridname;
+var test2=new Array();
 
 //random
 var randomNum;
@@ -70,6 +71,7 @@ db=db["db"];
 
 
 
+
 var size=new Array();
 
 document.getElementById('zoom').addEventListener('click',function(){
@@ -81,16 +83,30 @@ document.getElementById('zoom').addEventListener('click',function(){
       );
   });
   size.length=0;
+  test2=[];
+  note.innerHTML="";
+  
 });
 document.getElementById('zoom2').addEventListener('click',function(){
-  size.forEach(item=>{
-    map.setFeatureState(
-      { source: 'test', id: item },
-      { hover: false }
-      );
+  var pns=document.getElementById('pn').value;
+  
+  $.ajax({
+    url: "http://localhost:5000/test/dd",
+    type:'POST',
+    traditional:true,
+    data:{
+      data:test2,
+      pn:pns
+    },
+    success:function(data){
+      console.log("성공 했습니당 데이터:"+data);
+    },
+
+
   });
-  size.length=0;
+
 });
+var note=document.getElementById('note');
 function pluselayer(data,sourcename,lineid,linecolor,fillid,fillcolor){
   
   map.addSource(sourcename, {
@@ -124,26 +140,49 @@ function pluselayer(data,sourcename,lineid,linecolor,fillid,fillcolor){
 };
 function clickevent(layerid,sources){
   map.on('click',layerid,function(e){
-    gridname = e.features[0].name;
-    hoveredStateId = e.features[0].id;
     
+    gridname = e.features[0].properties.f2;
+    hoveredStateId = e.features[0].id;
+
+    $.ajax({
+    url: "http://localhost:5000/test/dd2",
+    type:'POST',
+    traditional:true,
+    data:{
+      data:gridname
+    },
+    success:function(a){
+     console.log(a);
+    },
+
+
+  });
+
+
     
     size.push(hoveredStateId);
     map.setFeatureState(
     { source: sources, id: hoveredStateId },
     { hover: true }
     ); 
+    test2.push(e.features[0].properties.f2);
+    note.innerHTML +=e.features[0].properties.f2;
+    note.innerHTML+=", ";
     
-    
+
   });
   
+  
+  
   };
-
+  
 
 
 
 
 map.on('load', function() {
+
+  
   pluselayer(test,'test','test','red','test-fill','red');
   clickevent('test-fill','test');
 
@@ -153,24 +192,11 @@ map.on('load', function() {
   pluselayer(db,'db','db','gray','db-fill','gray');
   clickevent('db-fill','db');
 
-  map.addLayer({
-    'filter': ["all", ["==", "$type", "Polygon"]],
-    'id': 'aa',
-    'type': 'symbol',
-    'source': "db",
-    'layout': {
-        "text-field": ['get', 'f2'],
-        "text-size":10
-    },
-    'paint': {
-    'text-color':"#fff"
-    }
-  });
+  
 
-  map.setFeatureState(
-    { source: 'db', id:302 },
-    { 'text-field' : "5" }
-    ); 
+  
+
+ 
   
 
   map.loadImage(
@@ -202,25 +228,47 @@ map.on('load', function() {
           'icon-opacity': [
           'case',
           ['boolean', ['feature-state', 'hovera'], false],
-          1,
+          0.5,
           0
           ]
           }
         
       });
+      map.addLayer({
+        'filter': ["all", ["==", "$type", "Polygon"]],
+        'id': 'aa',
+        'minzoom':19,
+        'type': 'symbol',
+        'source': "db",
+        'layout': {
+            "text-field": ['get', 'f2'],
+            "text-size":10
+        },
+        'paint': {
+        'text-color':"#fff"
+        }
+      });
     }
+    
   );
 
   for(let i=0;i<10000;i++){
     randomNum=Math.random()*90601;
     randomNumFloor=Math.floor(randomNum);
- 
+
   map.setFeatureState(
     { source: 'db', id:randomNumFloor },
     { hovera: true }
     ); 
   }
+  
  
+
+
+
+
+
+  
 
 });
 
@@ -230,7 +278,6 @@ accessToken: mapboxgl.accessToken,
 mapboxgl: mapboxgl,
 });
 // 검색창 생성
-
 
 
 
