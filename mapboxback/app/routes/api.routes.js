@@ -13,6 +13,7 @@ module.exports = app =>{
     router.post('/loding',api.loding);
     router.post('/loder',api.roder);
     router.post('/data',api.datatest);
+    router.post('/data2',api.userdata);
     router.post('/dd',api.tiledata);
     router.post('/dd2',api.buydata);
 

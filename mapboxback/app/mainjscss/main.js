@@ -14,10 +14,12 @@ zoom:15, // starting zoom
 var road;
 var test;
 var db;
+var db2;
 var dbtest;
 var hoveredStateId = null;
 var gridname;
 var test2=new Array();
+var connect;
 
 //random
 var randomNum;
@@ -67,6 +69,19 @@ $.ajax({
 db=db[0];
 db=db["db"];
 
+$.ajax({
+  url:'http://localhost:5000/test/data2',
+  type:'POST',
+  datatype:'json',
+  async:false,
+  success:function(a){
+    db2=a;
+  }
+})
+db2=db2[0];
+db2=db2["db"];
+
+
 
 
 
@@ -85,6 +100,7 @@ document.getElementById('zoom').addEventListener('click',function(){
   size.length=0;
   test2=[];
   note.innerHTML="";
+  document.getElementById('pn').value="";
   
 });
 document.getElementById('zoom2').addEventListener('click',function(){
@@ -98,13 +114,14 @@ document.getElementById('zoom2').addEventListener('click',function(){
       data:test2,
       pn:pns
     },
-    success:function(data){
-      console.log("성공 했습니당 데이터:"+data);
-    },
+
+
+    
 
 
   });
 
+  alert("저장되었습니다.");
 });
 var note=document.getElementById('note');
 function pluselayer(data,sourcename,lineid,linecolor,fillid,fillcolor){
@@ -148,15 +165,36 @@ function clickevent(layerid,sources){
     url: "http://localhost:5000/test/dd2",
     type:'POST',
     traditional:true,
+    
+    
     data:{
       data:gridname
     },
     success:function(a){
-     console.log(a);
+       connect=a;
+       if(connect!=null){
+        for(let i=0;i<connect.length;i++){
+          map.setFeatureState(
+            { source: sources, id: connect[i]["gid"] },
+            { hover: true }
+            ); 
+            size.push(connect[i]["gid"]);
+          note.innerHTML+=connect[i]["pagename"];
+          note.innerHTML+=", ";
+          }
+          document.getElementById('pn').value=connect[0]["username"];
+          connect=null;
+         
+       }
+       else{ 
+       
+        connect=null;
+
+        }
+
     },
-
-
   });
+  
 
 
     
@@ -191,7 +229,40 @@ map.on('load', function() {
 
   pluselayer(db,'db','db','gray','db-fill','gray');
   clickevent('db-fill','db');
+  
 
+  
+ map.addSource('db2', {
+    'type': "geojson",
+    'data':db2
+  });
+  map.addLayer({
+      'id': 'db2',
+      'type': 'line',
+      'source': 'db2',
+      'paint': {
+          'line-color': 'red',
+      }});
+  map.addLayer({
+    'id': 'db2-fill',
+    'type': 'fill',
+    'source': 'db2',
+    'layout': {
+
+    },
+    'paint': {
+    'fill-color': 'red',
+    'fill-opacity': [
+    'case',
+    ['boolean', ['feature-state', 'hover'], true],
+    0.5,
+    0.5
+    ]
+    }
+  });
+
+
+ 
   
 
   
