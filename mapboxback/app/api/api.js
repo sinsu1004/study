@@ -16,7 +16,7 @@ const buydata=(request,response)=>{
     
         if(results.rows!=''){
                 var ho=results.rows[0]["username"];
-                pool.query('select pagename,gid,username from aa2 where username=$1',[ho],(error,results)=>{
+                pool.query('select pagename,gid,username,country from aa2 where username=$1',[ho],(error,results)=>{
                     response.status(200).json(results.rows);
                 });
             
@@ -54,7 +54,7 @@ const datatest =(request,response) =>{
 }
 
 const userdata =(request,response) =>{
-    pool.query('select row_to_json(fc) as db from (select \'FeatureCollection\' AS type, json_build_object(\'type\',\'name\',\'properties\', json_build_object(\'name\',\'EPSG:4326\')) as crs, array_to_json(array_agg(f)) as features from (select \'Feature\' as type,  st_asGeoJson(st_setsrid(((st_dump(geom)).geom::geometry),4326),100)::json as geometry ,row_to_json((gid, pagename)) AS properties,gid AS ID  from aa2 ) as f) as fc',(error, results) =>{
+    pool.query('select row_to_json(fc) as db from (select \'FeatureCollection\' AS type, json_build_object(\'type\',\'name\',\'properties\', json_build_object(\'name\',\'EPSG:4326\')) as crs, array_to_json(array_agg(f)) as features from (select \'Feature\' as type,  st_asGeoJson(st_setsrid(((st_dump(geom)).geom::geometry),4326),100)::json as geometry ,row_to_json((gid, pagename,country)) AS properties,gid AS ID  from aa2 ) as f) as fc',(error, results) =>{
         response.status(200).json(results.rows);
     });
 }
