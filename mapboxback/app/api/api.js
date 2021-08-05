@@ -37,6 +37,9 @@ const tiledata =(request,response)=>{
         //     response.status(200)
 
         //     });
+        pool.query('update aa set buy=TRUE where pagename=$1',[test[i]],(error,results)=>{
+            
+        });
         pool.query('select gid,pagename,pagenumber,geom from aa where pagename=$1',[test[i]],(error,results) =>{
             pool.query('insert into aa2 (gid,pagename,pagenumber,geom,username) values ($1,$2,$3,$4,$5)',[results.rows[0]["gid"],results.rows[0]["pagename"],results.rows[0]["pagenumber"],results.rows[0]["geom"],test2],(error,results)=>{
 
@@ -48,7 +51,7 @@ const tiledata =(request,response)=>{
 }
 
 const datatest =(request,response) =>{
-    pool.query('select row_to_json(fc) as db from (select \'FeatureCollection\' AS type, json_build_object(\'type\',\'name\',\'properties\', json_build_object(\'name\',\'EPSG:4326\')) as crs, array_to_json(array_agg(f)) as features from (select \'Feature\' as type,  st_asGeoJson(st_setsrid(((st_dump(geom)).geom::geometry),4326),100)::json as geometry ,row_to_json((gid, pagename)) AS properties,gid AS ID  from aa ) as f) as fc',(error, results) =>{
+    pool.query('select row_to_json(fc) as db from (select \'FeatureCollection\' AS type, json_build_object(\'type\',\'name\',\'properties\', json_build_object(\'name\',\'EPSG:4326\')) as crs, array_to_json(array_agg(f)) as features from (select \'Feature\' as type,  st_asGeoJson(st_setsrid(((st_dump(geom)).geom::geometry),4326),100)::json as geometry ,row_to_json((gid, pagename,buy)) AS properties,gid AS ID  from aa ) as f) as fc',(error, results) =>{
         response.status(200).json(results.rows);
     });
 }

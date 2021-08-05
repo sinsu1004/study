@@ -12,9 +12,12 @@ app.listen(port, () => {
   console.log(`Horror movie app is running on port ${port}.`);
 });
 
+
 app.use('/mainjscss/main.css', express.static(__dirname + "/mainjscss/main.css"));
 app.use('/mainjscss/main.js', express.static(__dirname + "/mainjscss/main.js"));
+app.use('/mainjscss/truck_flat.glb', express.static(__dirname + "/mainjscss/truck_flat.glb"));
 app.get("/home", (req, res) => {
   res.sendFile(__dirname + '/views/main.html');
 })
+
 require("./routes/api.routes.js")(app);
