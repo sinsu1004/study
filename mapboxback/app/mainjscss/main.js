@@ -35,110 +35,121 @@ var images = {
   "germany":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQwAAAC8CAMAAAC672BgAAAAFVBMVEUAAAD/7QDiABr/8wCiABPlABvujhOLwiLrAAAA+0lEQVR4nO3QRw3AAAwAsXTyh9xfdBQq2RA8AwAAAAAAAAAAAAAAAAAAAMDf3Kx5WHOyZISMkBEyQkbICBkhI2SEjJARMkJGyAgZISNkhIyQETJCRsgIGSEjZISMkBEyQkbICBkhI2SEjJARMkJGyAgZISNkhIyQETJCRsgIGSEjZISMkBEyQkbICBkhI2SEjJiXNRdrDpaMkBEyQkbICBkhI2SEjJARMkJGyAgZISNkhIyQETJCRsgIGSEjZISMkBEyQkbICBkhI2SEjJARMkJGyAgZISNkhIyQETJCRsgIGSEjZISMkBEyQkbICBkhI2SEjJARMkJGyIgP5PXPScb8NLAAAAAASUVORK5CYII=",
 };
 
-//map 불러오는 부분
-//map.showTileBoundaries = true;
-//테스트테스트
-var modelOrigin = [127.01817735546426,37.5050814988523];
-var modelAltitude = 0;
-var modelRotate = [Math.PI / 2, 0, 0];
- 
-var modelAsMercatorCoordinate = mapboxgl.MercatorCoordinate.fromLngLat(
-modelOrigin,
-modelAltitude
-);
+function add(x,y,d3id,image) {
+  var modelOrigin = [x,y];
+  var modelAltitude = 0;
+  var modelRotate = [Math.PI / 2, 0, 0];
 
-var modelTransform = {
-  translateX: modelAsMercatorCoordinate.x,
-  translateY: modelAsMercatorCoordinate.y,
-  translateZ: modelAsMercatorCoordinate.z,
-  rotateX: modelRotate[0],
-  rotateY: modelRotate[1],
-  rotateZ: modelRotate[2],
-  /* Since our 3D model is in real world meters, a scale transform needs to be
-  * applied since the CustomLayerInterface expects units in MercatorCoordinates.
-  */
-  scale: modelAsMercatorCoordinate.meterInMercatorCoordinateUnits()
-  };
-var THREE = window.THREE;
-var customLayer = {
-  id: '3d-model',
-  type: 'custom',
-  renderingMode: '3d',
-  onAdd: function (map, gl) {
-  this.camera = new THREE.Camera();
-  this.scene = new THREE.Scene();
-   
-  // create two three.js lights to illuminate the model
-  var directionalLight = new THREE.DirectionalLight(0xffffff);
-  directionalLight.position.set(0, -70, 100).normalize();
-  this.scene.add(directionalLight);
-   
-  var directionalLight2 = new THREE.DirectionalLight(0xffffff);
-  directionalLight2.position.set(0, 70, 100).normalize();
-  this.scene.add(directionalLight2);
-   
-  // use the three.js GLTF loader to add the 3D model to the three.js scene
-  var loader = new THREE.GLTFLoader();
-  loader.load(
-  '/mainjscss/truck_flat.glb',
-  function (gltf) {
-  this.scene.add(gltf.scene);
-  }.bind(this)
+  var modelAsMercatorCoordinate = mapboxgl.MercatorCoordinate.fromLngLat(
+    modelOrigin,
+    modelAltitude
   );
-  this.map = map;
-   
-  // use the Mapbox GL JS map canvas for three.js
-  this.renderer = new THREE.WebGLRenderer({
-  canvas: map.getCanvas(),
-  context: gl,
-  antialias: true
-  });
-   
-  this.renderer.autoClear = false;
-  },
-  render: function (gl, matrix) {
-  var rotationX = new THREE.Matrix4().makeRotationAxis(
-  new THREE.Vector3(1, 0, 0),
-  modelTransform.rotateX
-  );
-  var rotationY = new THREE.Matrix4().makeRotationAxis(
-  new THREE.Vector3(0, 1, 0),
-  modelTransform.rotateY
-  );
-  var rotationZ = new THREE.Matrix4().makeRotationAxis(
-  new THREE.Vector3(0, 0, 1),
-  modelTransform.rotateZ
-  );
-   
-  var m = new THREE.Matrix4().fromArray(matrix);
-  var l = new THREE.Matrix4()
-  .makeTranslation(
-  modelTransform.translateX,
-  modelTransform.translateY,
-  modelTransform.translateZ
-  )
-  .scale(
-  new THREE.Vector3(
-  modelTransform.scale,
-  -modelTransform.scale,
-  modelTransform.scale
-  )
-  )
-  .multiply(rotationX)
-  .multiply(rotationY)
-  .multiply(rotationZ);
-   
-  this.camera.projectionMatrix = m.multiply(l);
-  this.renderer.resetState();
-  this.renderer.render(this.scene, this.camera);
-  this.map.triggerRepaint();
-  }
+
+  // transformation parameters to position, rotate and scale the 3D model onto the map
+  var modelTransform = {
+    translateX: modelAsMercatorCoordinate.x,
+    translateY: modelAsMercatorCoordinate.y,
+    translateZ: modelAsMercatorCoordinate.z,
+    rotateX: modelRotate[0],
+    rotateY: modelRotate[1],
+    rotateZ: modelRotate[2],
+    /* Since our 3D model is in real world meters, a scale transform needs to be
+     * applied since the CustomLayerInterface expects units in MercatorCoordinates.
+     */
+    scale: modelAsMercatorCoordinate.meterInMercatorCoordinateUnits(),
   };
 
+  var THREE = window.THREE;
+
+  var customLayer = {
+    id: d3id,
+    type: "custom",
+    renderingMode: "3d",
+    onAdd: function (map, gl) {
+      this.camera = new THREE.Camera();
+      this.scene = new THREE.Scene();
+
+      var directionalLight = new THREE.DirectionalLight(0xffffff);
+      directionalLight.position.set(0, -70, 100).normalize();
+      this.scene.add(directionalLight);
+
+      var directionalLight2 = new THREE.DirectionalLight(0xffffff);
+      directionalLight2.position.set(0, 70, 100).normalize();
+      this.scene.add(directionalLight2);
+
+      var loader = new THREE.GLTFLoader();
+      loader.load(
+        image,
+        function (gltf) {
+          this.scene.add(gltf.scene);
+        }.bind(this)
+      );
+      this.map = map;
+
+      // use the Mapbox GL JS map canvas for three.js
+      this.renderer = new THREE.WebGLRenderer({
+        canvas: map.getCanvas(),
+        context: gl,
+        antialias: true,
+      });
+
+      this.renderer.autoClear = false;
+    },
+    render: function (gl, matrix) {
+      var rotationX = new THREE.Matrix4().makeRotationAxis(
+        new THREE.Vector3(1, 0, 0),
+        modelTransform.rotateX
+      );
+      var rotationY = new THREE.Matrix4().makeRotationAxis(
+        new THREE.Vector3(0, 1, 0),
+        modelTransform.rotateY
+      );
+      var rotationZ = new THREE.Matrix4().makeRotationAxis(
+        new THREE.Vector3(0, 0, 1),
+        modelTransform.rotateZ
+      );
+
+      var m = new THREE.Matrix4().fromArray(matrix);
+      var l = new THREE.Matrix4()
+        .makeTranslation(
+          modelTransform.translateX,
+          modelTransform.translateY,
+          modelTransform.translateZ
+        )
+        .scale(
+          new THREE.Vector3(
+            modelTransform.scale,
+            -modelTransform.scale,
+            modelTransform.scale
+          )
+        )
+        .multiply(rotationX)
+        .multiply(rotationY)
+        .multiply(rotationZ);
+
+      this.camera.projectionMatrix = m.multiply(l);
+      this.renderer.resetState();
+      this.renderer.render(this.scene, this.camera);
+      this.map.triggerRepaint();
+    },
+  };
+  return customLayer;
+}
 
 
 map.on('style.load', function () {
-map.addLayer(customLayer, 'waterway-label');
+var a=add(127.01817735546426,37.5050814988523,'3d-model','/mainjscss/truck_flat.glb');
+map.addLayer(a, 'waterway-label');
+var b=add(127.01853668157793,37.504938972130624,'3d-model2','https://docs.mapbox.com/mapbox-gl-js/assets/34M_17/34M_17.gltf');
+map.addLayer(b, 'waterway-label');
+var c=add(127.01772819782221,37.504938972130624,'d3','/mainjscss/Mosque.gltf');
+map.addLayer(c, 'waterway-label');
+var d=add(127.01799769240745,37.504725181537935,'d4','/mainjscss/c.glb');
+map.addLayer(d, 'waterway-label');
+var e=add(127.01817735546426,37.50436886252293,'d5','/mainjscss/b.gltf');
+map.addLayer(e, 'waterway-label');
+
+
   
   });
 
