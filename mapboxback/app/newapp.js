@@ -2,14 +2,32 @@ const api = require('./api/api.js');
 const cors = require('cors');
 const express = require('express');
 const bodyParser = require('body-parser');
+const https =require('https');
+const fs=require('fs');
 const app = express();
 const port = 5000;
+const port2 = 443;
+
+
+const options = {
+  key: fs.readFileSync(__dirname+'/ssl/private.pem'),
+  cert: fs.readFileSync(__dirname+'/ssl/public.pem')
+
+};
+
+
+
 app.use(express.json());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cors());
+
+
 app.listen(port, () => {
-  console.log(`Horror movie app is running on port ${port}.`);
+    console.log(`Horror movie app is running on port ${port}.`);
+  });
+https.createServer(options,app).listen(port2,function(){
+  console.log(`Horror movie app is running on port ${port2}.`);
 });
 
 

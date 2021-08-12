@@ -22,6 +22,7 @@ const buydata=(request,response)=>{
             
         }
         else{
+            
             response.status(200).json(results.rows);
         }
         });
@@ -57,7 +58,10 @@ const datatest =(request,response) =>{
 }
 
 const userdata =(request,response) =>{
-    pool.query('select row_to_json(fc) as db from (select \'FeatureCollection\' AS type, json_build_object(\'type\',\'name\',\'properties\', json_build_object(\'name\',\'EPSG:4326\')) as crs, array_to_json(array_agg(f)) as features from (select \'Feature\' as type,  st_asGeoJson(st_setsrid(((st_dump(geom)).geom::geometry),4326),100)::json as geometry ,row_to_json((gid, pagename,country)) AS properties,gid AS ID  from aa2 ) as f) as fc',(error, results) =>{
+    var data=request.body;
+    var id=Object.values(data);
+    
+    pool.query('select row_to_json(fc) as db from (select \'FeatureCollection\' AS type, json_build_object(\'type\',\'name\',\'properties\', json_build_object(\'name\',\'EPSG:4326\')) as crs, array_to_json(array_agg(f)) as features from (select \'Feature\' as type,  st_asGeoJson(st_setsrid(((st_dump(geom)).geom::geometry),4326),100)::json as geometry ,row_to_json((gid, pagename,country)) AS properties,gid AS ID  from aa2 where geom && ST_MakeEnvelope( $1, $2, $3 ,$4 , 4326)) as f) as fc',[id[0],id[1],id[2],id[3]],(error, results) =>{
         response.status(200).json(results.rows);
     });
 }
@@ -74,8 +78,7 @@ const test = (request, response) => {
             response.status(200).json(results.rows);
             var save=results.rows;
             var real;
-            console.log(save[0]["geom"]);
-            console.log(save.length);
+           
             for(let i=0;i<save.length;i++){
                 real=save[i]["geom"];
                 pool.query('INSERT INTO test2 (geom) VALUES (st_asbinary(st_geomfromtext($1,4326)))',[real],(error, results) => {

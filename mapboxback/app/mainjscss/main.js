@@ -7,7 +7,7 @@ var map = new mapboxgl.Map({
 container: "map", // container id
 style: "mapbox://styles/shinseunghun/ckqqa24e22qdh17q0k9fh7bnj", // style URL
 center: [127.0206028067314, 37.50301483475639], // starting position [lng, lat]
-zoom:15, // starting zoom
+zoom:19, // starting zoom
 });
 var road;
 var test;
@@ -20,6 +20,7 @@ var test2=new Array();
 var connect;
 var select=0;
 var hoho=0;
+var checkmove=0;
 
 
 //random
@@ -165,7 +166,7 @@ map.addLayer(e, 'waterway-label');
 // 데이터 베이스에서 네모 호출
 
 $.ajax({
-  url:'http://localhost:5000/test/loding',
+  url:'http://172.30.1.7:5000/test/loding',
   type:'POST',
   datatype:'json',
   async:false,
@@ -178,7 +179,7 @@ squareGrid=squareGrid["squaregrid"];
  
 
 $.ajax({
-  url:'http://localhost:5000/test/loder',
+  url:'http://172.30.1.7:5000/test/loder',
   type:'POST',
   datatype:'json',
   async:false,
@@ -190,9 +191,10 @@ test=test[0];
 test=test["test2"];
 
 $.ajax({
-  url:'http://localhost:5000/test/data',
+  url:'http://172.30.1.7:5000/test/data',
   type:'POST',
-  datatype:'json',
+  jsonpCallback: "myCallback",
+  datatype:'jsonp',
   async:false,
   success:function(a){
     
@@ -202,17 +204,7 @@ $.ajax({
 db=db[0];
 db=db["db"];
 
-$.ajax({
-  url:'http://localhost:5000/test/data2',
-  type:'POST',
-  datatype:'json',
-  async:false,
-  success:function(a){
-    db2=a;
-  }
-})
-db2=db2[0];
-db2=db2["db"];
+
 
 
 
@@ -322,8 +314,6 @@ map.on('load', function() {
   var start;
   var current;
   var box;
-  
-
   canvas.addEventListener("mousedown", mouseDown, true);
   function mousePos(e) {
     var rect = canvas.getBoundingClientRect();
@@ -432,12 +422,6 @@ map.on('load', function() {
 
   //끝
 
-  // pluselayer(test,'test','test','red','test-fill','red');
-  // clickevent('test-fill','test');
-
-  // pluselayer(squareGrid,'grid','grid','gray','grid-fill','#627BC1');
-  // clickevent('grid-fill','grid');
-
   pluselayer(db,'db','db','gray','db-fill','gray');
   //
   map.on('click','db-fill',function(e){
@@ -463,7 +447,7 @@ map.on('load', function() {
     gridname = e.features[0].properties.f2;
     hoveredStateId = e.features[0].id;
     $.ajax({
-    url: "http://localhost:5000/test/dd2",
+    url: "http://172.30.1.7:5000/test/dd2",
     type:'POST',
     async:false,
     traditional:true,
@@ -541,71 +525,143 @@ map.on('load', function() {
     
 
   });
-  
-  
-  
 
-  
- map.addSource('db2', {
-    'type': "geojson",
-    'data':db2
-  });
-  map.addLayer({
-    'id': 'db2',
-    'type': 'line',
-    'source': 'db2',
-    'paint': {
-        'line-color': 'gray',
-    }});
-  map.addLayer({
-    'id': 'db2-fill',
-    'type': 'fill',
-    'source': 'db2',
-    'layout': {
+  map.on('moveend', () => {
+    var bounds = map.getBounds();
+    bound={
+      xmin:bounds._sw.lng,
+      xmax:bounds._ne.lng,
+      ymin:bounds._sw.lat,
+      ymax:bounds._ne.lat,
 
-    },
-    'paint': {
-    'fill-color': 'red',
-    'fill-opacity': [
-    'case',
-    ['boolean', ['feature-state', 'hover'], true],
-    0.5,
-    0
-    ]
     }
-  });
-  map.addLayer({
-    'id': 'db2-fill2',
-    'type': 'fill',
-    'source': 'db2',
-    'layout': {
-
-    },
-    'paint': {
-    'fill-color': '#00FF00',
-    'fill-opacity': [
-    'case',
-    ['boolean', ['feature-state', 'hoveraa'], false],
-    5,
-    0
-    ]
+    
+    $.ajax({
+      url:'http://172.30.1.7:5000/test/data2',
+      type:'POST',
+      datatype:'json',
+      data:{
+        data:bounds
+      },
+      async:false,
+      success:function(a){
+        db2=a;
+      }
+    })
+    db2=db2[0];
+    db2=db2["db"];
+    if(checkmove==0){
+      checkmove=1;
     }
-  });
-  map.addLayer({
-    'filter': ["all", ["==", "$type", "Polygon"]],
-    'id': 'aa2',
-    'minzoom':19,
-    'type': 'symbol',
-    'source': "db2",
-    'layout': {
-        "text-field": ['get', 'f2'],
-        "text-size":10
-    },
-    'paint': {
-    'text-color':"#fff"
+    else{
+      
+      map.removeLayer('db2');
+      map.removeLayer('db2-fill');
+      map.removeLayer('db2-fill2');
+      map.removeLayer('aa2');
+      map.removeLayer('pattern-layer');
+      map.removeSource('db2');
     }
-  });
+    map.addSource('db2', {
+      'type': "geojson",
+      'data':db2
+    });
+    map.addLayer({
+      'id': 'db2',
+      'type': 'line',
+      'source': 'db2',
+      'paint': {
+          'line-color': 'gray',
+      }});
+    map.addLayer({
+      'id': 'db2-fill',
+      'type': 'fill',
+      'source': 'db2',
+      'layout': {
+  
+      },
+      'paint': {
+      'fill-color': 'red',
+      'fill-opacity': [
+      'case',
+      ['boolean', ['feature-state', 'hover'], true],
+      0.5,
+      0
+      ]
+      }
+    });
+    map.addLayer({
+      'id': 'db2-fill2',
+      'type': 'fill',
+      'source': 'db2',
+      'layout': {
+  
+      },
+      'paint': {
+      'fill-color': '#00FF00',
+      'fill-opacity': [
+      'case',
+      ['boolean', ['feature-state', 'hoveraa'], false],
+      5,
+      0
+      ]
+      }
+    });
+    map.addLayer({
+      'filter': ["all", ["==", "$type", "Polygon"]],
+      'id': 'aa2',
+      'minzoom':19,
+      'type': 'symbol',
+      'source': "db2",
+      'layout': {
+          "text-field": ['get', 'f2'],
+          "text-size":10
+      },
+      'paint': {
+      'text-color':"#fff"
+      }
+    });
+    map.addLayer({
+      'id': "pattern-layer",
+      'minzoom':19,
+      'type': "symbol",
+      'source': "db2",
+      'layout': {
+        "icon-allow-overlap": !0,
+        "icon-image": ['get', 'f3'], // reference the image
+        "icon-size": {
+          stops: [
+            [18, 0.2],
+            [20, 0.3],
+          ],
+        },
+      },
+      'paint': {
+        'icon-opacity': [
+        'case',
+        ['boolean', ['feature-state', 'hovera'], false],
+        1,
+        0.5
+        ]
+        }
+      
+    });
+  
+    for(let i=0;i<db2["features"].length;i++){    //국기 정보가 있는 유저들 빨간색fill 삭제
+      if(db2["features"][i]["properties"].f3!=null){
+        num=db2["features"][i].id;
+      map.setFeatureState(
+        { source: 'db2', id:num },
+        { hover: false }
+        ); 
+      }
+    }
+      
+    });
+  
+  
 
+  
 
  
   
@@ -622,31 +678,7 @@ map.on('load', function() {
       map.addImage("korea", loadedImages["korea"]);
       map.addImage("china",loadedImages["china"]);
       map.addImage("germany",loadedImages["germany"]);
-      map.addLayer({
-        'id': "pattern-layer",
-        'minzoom':19,
-        'type': "symbol",
-        'source': "db2",
-        'layout': {
-          "icon-allow-overlap": !0,
-          "icon-image": ['get', 'f3'], // reference the image
-          "icon-size": {
-            stops: [
-              [18, 0.2],
-              [20, 0.3],
-            ],
-          },
-        },
-        'paint': {
-          'icon-opacity': [
-          'case',
-          ['boolean', ['feature-state', 'hovera'], false],
-          1,
-          0.5
-          ]
-          }
-        
-      });
+      
       
       map.addLayer({
         'filter': ["all", ["==", "$type", "Polygon"]],
@@ -671,16 +703,7 @@ map.on('load', function() {
   
 
   
-for(let i=0;i<db2["features"].length;i++){
-  if(db2["features"][i]["properties"].f3!=null){
-    num=db2["features"][i].id;
-  map.setFeatureState(
-    { source: 'db2', id:num },
-    { hover: false }
-    ); 
-  }
-}
-  
+
  
 
 
