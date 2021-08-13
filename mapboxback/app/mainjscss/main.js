@@ -22,11 +22,10 @@ var select=0;
 var hoho=0;
 var checkmove=0;
 
-
 //random
 var randomNum;
 var randomNumFloor;
-
+//-----------------------------------------------------------------이미지-------------------------------------------
 var images = {
   "popup": "https://docs.mapbox.com/mapbox-gl-js/assets/popup.png",
   "korea":
@@ -35,7 +34,30 @@ var images = {
     "china":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOEAAACWCAMAAAAfSh8xAAAAgVBMVEXuHCX//wD2hhT//QDzWRv1fxX+9AL3jhLvKCP4pA/vLCL5rQ3/+wHvMCL/+QH+9gHzYxn7wwr96QT6vgv4nRDzXhr70AjxSR7+8ALwOyDyUhz0cRf5swz6uAz95wT81gf4qA73lRH83Qb7ygn1eRb80wfxQx/0ahj1gBX7ywj94AV8jcCbAAADPElEQVR4nO3baVfqMBAGYCKlpECBLnSxgIJFrvz/H3i7orLYiXRJ6vt88HiOjWfGpklmioMBAAAA1GvZdQBNW3ldR9AYbcSTr77udB1IczzdeDe3bNp1HM3xh4wFjO26jqNBBkutJ13H0ZzJPEtxYbx3HcnvHCuvGLPSVMX7yG1ecUWUZ/fiHsNWIqrbklVs5dqM6Vay2JjtxFO/acU2YBqxny02LcVTv4DphKsmQdB4JA1ZJU/YinBdvG88lIa8Jhm+Ui5UdsO3kwxJE7BqxZWVlm0EmtCYUKlVNT+QGUJjwpdi31fittpZhrbYoPkhTVFzVDjgPBensWehUXv2wZcee2ooqFq5RYau0KgNY3py45WYpNsiw63QqHU2Jm4oplr556LBpw+K9nktJeUt1J6+c84ZOhc/ubt/FPmlQ9qMnGw8ZCR3n0v+HLtWkF+0bjNyMs0m5BdUHVSTmn/j6ZL2pkynMkGr8syyZ2/J13ApaVdjNPsxv9m4+lc4ghto2/zTDwmeKLG7cq4yn/j0boK0lmEssLl0JNJv5rcY0YZLuRVeCD9uJHhQs5d2z/XWKHY4VcDh8g52HVDdzKtJ2q85Ohj8u8qQuMwo4+0qw7euQ6qXeX0GHyrVYaoU39gt6DWtCp9asMq0PM0rv7XIozdi/ccuTMrjd7oJllsjfZrqchZOXxXvBO28Eiyrxog4WpO0h/FVXiWeK8GiaqSWDG7xx5C4YcrTSfqtEsyqxll1yE/GepO2MXQ7GC6qX5B3Jp2kF5WgvydNU747bzMnSUv8zCapBC+fJG4wtiGM1Yomq9RNfb7Qb92tYzCnLCA8ayiKNZHbdvRun7LDD9KTlZfPUtf593sxlC6NllRa0x6Wk59cNuWD1VbwlZxKXrIyixuUDzgoiZcPYL9KkT+h97fM7+/amR8CzG1/M4yc9BhgMcIbG1VZzN69MjU+evE7oS7YxVHPKMtw7khcDj7InBcV4XYnc8X0gKIvpztx3xr/BVesTaWeiJ2MpceYzD2Lh/AonZrv8969mro0Vve/EagO0veAHyV1WwYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFTyH3WiHVN8niUxAAAAAElFTkSuQmCC",
   "germany":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQwAAAC8CAMAAAC672BgAAAAFVBMVEUAAAD/7QDiABr/8wCiABPlABvujhOLwiLrAAAA+0lEQVR4nO3QRw3AAAwAsXTyh9xfdBQq2RA8AwAAAAAAAAAAAAAAAAAAAMDf3Kx5WHOyZISMkBEyQkbICBkhI2SEjJARMkJGyAgZISNkhIyQETJCRsgIGSEjZISMkBEyQkbICBkhI2SEjJARMkJGyAgZISNkhIyQETJCRsgIGSEjZISMkBEyQkbICBkhI2SEjJiXNRdrDpaMkBEyQkbICBkhI2SEjJARMkJGyAgZISNkhIyQETJCRsgIGSEjZISMkBEyQkbICBkhI2SEjJARMkJGyAgZISNkhIyQETJCRsgIGSEjZISMkBEyQkbICBkhI2SEjJARMkJGyIgP5PXPScb8NLAAAAAASUVORK5CYII=",
 };
+function loadImages(urls, callback) {
+  var results = {};
+  for (var name in urls) {
+    map.loadImage(urls[name], makeCallback(name));
+  }
 
+  function makeCallback(name) {
+    return function (err, image) {
+      results[name] = err ? null : image;
+
+      // if all images are loaded, call the callback
+      if (Object.keys(results).length === Object.keys(urls).length) {
+        callback(results);
+      }
+    };
+  }
+}
+loadImages(images, function (loadedImages) {
+  map.addImage("korea", loadedImages["korea"]);
+  map.addImage("china",loadedImages["china"]);
+  map.addImage("germany",loadedImages["germany"]);
+});
+//---------------------------------------------------------------------------------------------
+//-----------------------------------------------------------3d 이미지 추가----------------------------------------------------------------
 function add(x,y,d3id,image) {
   var modelOrigin = [x,y];
   var modelAltitude = 0;
@@ -136,73 +158,21 @@ function add(x,y,d3id,image) {
   };
   return customLayer;
 }
-
-
 map.on('style.load', function () {
 var a=add(127.01817735546426,37.5050814988523,'3d-model','/mainjscss/truck_flat.glb');
 map.addLayer(a, 'waterway-label');
 var b=add(127.01853668157793,37.504938972130624,'3d-model2','https://docs.mapbox.com/mapbox-gl-js/assets/34M_17/34M_17.gltf');
 map.addLayer(b, 'waterway-label');
-var c=add(127.01772819782221,37.504938972130624,'d3','/mainjscss/Mosque.gltf');
+var c=add(127.01772819782221,37.504938972130624,'d3','/a');
 map.addLayer(c, 'waterway-label');
-var d=add(127.01799769240745,37.504725181537935,'d4','/mainjscss/c.glb');
+var d=add(127.01799769240745,37.504725181537935,'d4','/c');
 map.addLayer(d, 'waterway-label');
-var e=add(127.01817735546426,37.50436886252293,'d5','/mainjscss/b.gltf');
+var e=add(127.01817735546426,37.50436886252293,'d5','/b');
 map.addLayer(e, 'waterway-label');
-
-
-  
-  });
-
-
-
-
-
-
-
-//테스트마지막마지막
-
-
-// 데이터 베이스에서 네모 호출
-
-$.ajax({
-  url:'http://172.30.1.7:5000/test/loding',
-  type:'POST',
-  datatype:'json',
-  async:false,
-  success:function(tr){
-    squareGrid=tr;
-  }
-})
-squareGrid=squareGrid[0];
-squareGrid=squareGrid["squaregrid"];
- 
-
-$.ajax({
-  url:'http://172.30.1.7:5000/test/loder',
-  type:'POST',
-  datatype:'json',
-  async:false,
-  success:function(a){
-    test=a;
-  }
-})
-test=test[0];
-test=test["test2"];
-
-
-
-
-
-
-
-
-
-
-
+});
+//------------------------------------------------------------------------------------------------------------------------------------------
 var size=new Array();
-
-document.getElementById('zoom').addEventListener('click',function(){
+document.getElementById('zoom').addEventListener('click',function(){      //초기화 버튼
 
   size.forEach(item=>{
     map.setFeatureState(
@@ -224,9 +194,8 @@ document.getElementById('zoom').addEventListener('click',function(){
   document.getElementById('pn').value="";
   
 });
-document.getElementById('zoom2').addEventListener('click',function(){
+document.getElementById('zoom2').addEventListener('click',function(){     //저장 버튼
   var pns=document.getElementById('pn').value;
-  
   $.ajax({
     url: "http://localhost:5000/test/dd",
     type:'POST',
@@ -236,32 +205,10 @@ document.getElementById('zoom2').addEventListener('click',function(){
       data:test2,
       pn:pns
     },
-
-
-    
-
-
   });
   test2=[];
   alert("저장되었습니다.");
 });
-function loadImages(urls, callback) {
-  var results = {};
-  for (var name in urls) {
-    map.loadImage(urls[name], makeCallback(name));
-  }
-
-  function makeCallback(name) {
-    return function (err, image) {
-      results[name] = err ? null : image;
-
-      // if all images are loaded, call the callback
-      if (Object.keys(results).length === Object.keys(urls).length) {
-        callback(results);
-      }
-    };
-  }
-}
 var note=document.getElementById('note');
 function pluselayer(data,sourcename,lineid,linecolor,fillid,fillcolor){
   
@@ -294,7 +241,6 @@ function pluselayer(data,sourcename,lineid,linecolor,fillid,fillcolor){
     }
   });
 };
-
 map.boxZoom.disable();
 map.on('load', function() {
   //시작
@@ -514,7 +460,7 @@ map.on('load', function() {
 
   });
 
-  map.on('moveend', () => {
+  map.on('moveend', () => {           
     var bounds = map.getBounds();
     bound={
       xmin:bounds._sw.lng,
@@ -558,6 +504,7 @@ map.on('load', function() {
     else{
       map.removeLayer('db');
       map.removeLayer('db-fill');
+      map.removeLayer('aa');
       map.removeSource('db');
       map.removeLayer('db2');
       map.removeLayer('db2-fill');
@@ -567,18 +514,32 @@ map.on('load', function() {
       map.removeSource('db2');
     }
     pluselayer(db,'db','db','gray','db-fill','gray');
-    map.addSource('db2', {
+    map.addLayer({                 // 빈 그리드 텍스트 값 넣기
+      'filter': ["all", ["==", "$type", "Polygon"]],
+      'id': 'aa',
+      'minzoom':19,
+      'type': 'symbol',
+      'source': "db",
+      'layout': {
+          "text-field": ['get', 'f2'],
+          "text-size":10
+      },
+      'paint': {
+      'text-color':"#fff"
+      }
+    });
+    map.addSource('db2', {    //구매 그리드 데이터 소스추가
       'type': "geojson",
       'data':db2
     });
-    map.addLayer({
+    map.addLayer({      // 구매 그리드 선 그리기
       'id': 'db2',
       'type': 'line',
       'source': 'db2',
       'paint': {
           'line-color': 'gray',
       }});
-    map.addLayer({
+    map.addLayer({         //구매 그리드 빨간색 채우기
       'id': 'db2-fill',
       'type': 'fill',
       'source': 'db2',
@@ -595,7 +556,7 @@ map.on('load', function() {
       ]
       }
     });
-    map.addLayer({
+    map.addLayer({          //구매 그리드 이미지 없는값 클릭시 초록색 채우기 이벤트
       'id': 'db2-fill2',
       'type': 'fill',
       'source': 'db2',
@@ -612,7 +573,7 @@ map.on('load', function() {
       ]
       }
     });
-    map.addLayer({
+    map.addLayer({ // 구매 그리드 안 텍스트 값 넣기
       'filter': ["all", ["==", "$type", "Polygon"]],
       'id': 'aa2',
       'minzoom':19,
@@ -626,7 +587,7 @@ map.on('load', function() {
       'text-color':"#fff"
       }
     });
-    map.addLayer({
+    map.addLayer({ // 구매 그리드 안 이미지 넣기
       'id': "pattern-layer",
       'minzoom':19,
       'type': "symbol",
@@ -651,8 +612,9 @@ map.on('load', function() {
         }
       
     });
-    if(db2['features']!=null){
-    for(let i=0;i<db2["features"].length;i++){    //국기 정보가 있는 유저들 빨간색fill 삭제
+   
+    if(db2['features']!=null){//국기 정보가 있는 유저들 빨간색fill 삭제
+    for(let i=0;i<db2["features"].length;i++){    
       if(db2["features"][i]["properties"].f3!=null){
         num=db2["features"][i].id;
       map.setFeatureState(
@@ -663,47 +625,12 @@ map.on('load', function() {
     }
     }
 
+
+
     });
   
-  
 
   
-
- 
-  
-
-  
-
- 
-  
-
-
-    
-
-  loadImages(images, function (loadedImages) {
-      map.addImage("korea", loadedImages["korea"]);
-      map.addImage("china",loadedImages["china"]);
-      map.addImage("germany",loadedImages["germany"]);
-      
-      
-      map.addLayer({
-        'filter': ["all", ["==", "$type", "Polygon"]],
-        'id': 'aa',
-        'minzoom':19,
-        'type': 'symbol',
-        'source': "db",
-        'layout': {
-            "text-field": ['get', 'f2'],
-            "text-size":10
-        },
-        'paint': {
-        'text-color':"#fff"
-        }
-      });
-    
-    
-    
-    });
 
 
   
@@ -717,6 +644,7 @@ map.on('load', function() {
 
 
   
+
 
 });
 
@@ -726,9 +654,6 @@ accessToken: mapboxgl.accessToken,
 mapboxgl: mapboxgl,
 });
 // 검색창 생성
-
-
-
 
 document.getElementById("geocoder").appendChild(geocoder.onAdd(map)); // 검색창 넣기
 
