@@ -190,19 +190,7 @@ $.ajax({
 test=test[0];
 test=test["test2"];
 
-$.ajax({
-  url:'http://172.30.1.7:5000/test/data',
-  type:'POST',
-  jsonpCallback: "myCallback",
-  datatype:'jsonp',
-  async:false,
-  success:function(a){
-    
-    db=a;
-  }
-})
-db=db[0];
-db=db["db"];
+
 
 
 
@@ -422,7 +410,7 @@ map.on('load', function() {
 
   //끝
 
-  pluselayer(db,'db','db','gray','db-fill','gray');
+  
   //
   map.on('click','db-fill',function(e){
     if(select==1){
@@ -535,7 +523,21 @@ map.on('load', function() {
       ymax:bounds._ne.lat,
 
     }
-    
+    $.ajax({
+      url:'http://172.30.1.7:5000/test/data',
+      type:'POST',
+      datatype:'json',
+      async:false,data:{
+        data:bounds
+      },
+      success:function(a){
+        
+        db=a;
+      }
+    })
+    db=db[0];
+    db=db["db"];
+
     $.ajax({
       url:'http://172.30.1.7:5000/test/data2',
       type:'POST',
@@ -554,7 +556,9 @@ map.on('load', function() {
       checkmove=1;
     }
     else{
-      
+      map.removeLayer('db');
+      map.removeLayer('db-fill');
+      map.removeSource('db');
       map.removeLayer('db2');
       map.removeLayer('db2-fill');
       map.removeLayer('db2-fill2');
@@ -562,6 +566,7 @@ map.on('load', function() {
       map.removeLayer('pattern-layer');
       map.removeSource('db2');
     }
+    pluselayer(db,'db','db','gray','db-fill','gray');
     map.addSource('db2', {
       'type': "geojson",
       'data':db2
@@ -646,7 +651,7 @@ map.on('load', function() {
         }
       
     });
-  
+    if(db2['features']!=null){
     for(let i=0;i<db2["features"].length;i++){    //국기 정보가 있는 유저들 빨간색fill 삭제
       if(db2["features"][i]["properties"].f3!=null){
         num=db2["features"][i].id;
@@ -656,7 +661,8 @@ map.on('load', function() {
         ); 
       }
     }
-      
+    }
+
     });
   
   

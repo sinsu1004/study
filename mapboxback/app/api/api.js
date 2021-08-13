@@ -52,7 +52,9 @@ const tiledata =(request,response)=>{
 }
 
 const datatest =(request,response) =>{
-    pool.query('select row_to_json(fc) as db from (select \'FeatureCollection\' AS type, json_build_object(\'type\',\'name\',\'properties\', json_build_object(\'name\',\'EPSG:4326\')) as crs, array_to_json(array_agg(f)) as features from (select \'Feature\' as type,  st_asGeoJson(st_setsrid(((st_dump(geom)).geom::geometry),4326),100)::json as geometry ,row_to_json((gid, pagename,buy)) AS properties,gid AS ID  from aa ) as f) as fc',(error, results) =>{
+    var data=request.body;
+    var id=Object.values(data);
+    pool.query('select row_to_json(fc) as db from (select \'FeatureCollection\' AS type, json_build_object(\'type\',\'name\',\'properties\', json_build_object(\'name\',\'EPSG:4326\')) as crs, array_to_json(array_agg(f)) as features from (select \'Feature\' as type,  st_asGeoJson(st_setsrid(((st_dump(geom)).geom::geometry),4326),100)::json as geometry ,row_to_json((gid, pagename,buy)) AS properties,gid AS ID  from aa where geom && ST_MakeEnvelope( $1, $2, $3 ,$4 , 4326)) as f) as fc',[id[0],id[1],id[2],id[3]],(error, results) =>{
         response.status(200).json(results.rows);
     });
 }
