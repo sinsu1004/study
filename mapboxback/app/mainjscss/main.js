@@ -2,29 +2,25 @@
 mapboxgl.accessToken =
 "pk.eyJ1Ijoic2hpbnNldW5naHVuIiwiYSI6ImNrcWhkemdndjAxdGUycG5xcjB2bGc5aWQifQ.0z7oaAfK7ZTR87eXB5Fb2g";
 //토큰 부분
-var squareGrid;
 var map = new mapboxgl.Map({
 container: "map", // container id
 style: "mapbox://styles/shinseunghun/ckqqa24e22qdh17q0k9fh7bnj", // style URL
-center: [127.0206028067314, 37.50301483475639], // starting position [lng, lat]
-zoom:19, // starting zoom
+center: [127.01853668157793, 37.5050814988523], // starting position [lng, lat]
+zoom:18, // starting zoom
 });
-var road;
-var test;
 var db;
 var db2;
-var dbtest;
 var hoveredStateId = null;
 var gridname;
 var test2=new Array();
 var connect;
 var select=0;
 var hoho=0;
-var checkmove=0;
-
-//random
-var randomNum;
-var randomNumFloor;
+const bounds =[
+  [122.97269551925706,33.06751550443434],
+  [132.98923626406287,39.588392469775016]
+];
+map.setMaxBounds(bounds);
 //-----------------------------------------------------------------이미지-------------------------------------------
 var images = {
   "popup": "https://docs.mapbox.com/mapbox-gl-js/assets/popup.png",
@@ -159,79 +155,7 @@ var e=add(127.01817735546426,37.50436886252293,'d5','/b');
 map.addLayer(e, 'waterway-label');
 });
 //------------------------------------------------------------------------------------------------------------------------------------------
-var size=new Array();
-document.getElementById('zoom').addEventListener('click',function(){      //초기화 버튼
-
-  size.forEach(item=>{
-    map.setFeatureState(
-      { source: 'db', id: item },
-      { hover: false }
-      );
-    map.setFeatureState(
-        { source: 'db2', id: item },
-        { hovera: false }
-        );
-    map.setFeatureState(
-          { source: 'db2', id: item },
-          { hoveraa: false }
-          );    
-  });
-  size.length=0;
-  test2=[];
-  note.innerHTML="";
-  document.getElementById('pn').value="";
-  
-});
-document.getElementById('zoom2').addEventListener('click',function(){     //저장 버튼
-  var pns=document.getElementById('pn').value;
-  $.ajax({
-    url: "http://localhost:5000/test/dd",
-    type:'POST',
-    traditional:true,
-    async:false,
-    data:{
-      data:test2,
-      pn:pns
-    },
-  });
-  test2=[];
-  alert("저장되었습니다.");
-});
-var note=document.getElementById('note');
-function pluselayer(data,sourcename,lineid,linecolor,fillid,fillcolor){
-  
-  map.addSource(sourcename, {
-    'type': "geojson",
-    'data':data
-  });
-  map.addLayer({
-      'id': lineid,
-      'type': 'line',
-      'source': sourcename,
-      'paint': {
-          'line-color': linecolor,
-      }});
-  map.addLayer({
-    'id': fillid,
-    'type': 'fill',
-    'source': sourcename,
-    'layout': {
-
-    },
-    'paint': {
-    'fill-color': fillcolor,
-    'fill-opacity': [
-    'case',
-    ['boolean', ['feature-state', 'hover'], false],
-    1,
-    0
-    ]
-    }
-  });
-};
-map.boxZoom.disable();
-map.on('load', function() {
-  //시작
+function dragevent(){
   var canvas = map.getCanvasContainer();
   var start;
   var current;
@@ -341,8 +265,86 @@ map.on('load', function() {
 
     map.dragPan.enable();
   }
+}
 
- //
+var size=new Array();
+document.getElementById('zoom').addEventListener('click',function(){      //초기화 버튼
+
+  size.forEach(item=>{
+    map.setFeatureState(
+      { source: 'db', id: item },
+      { hover: false }
+      );
+    map.setFeatureState(
+        { source: 'db2', id: item },
+        { hovera: false }
+        );
+    map.setFeatureState(
+          { source: 'db2', id: item },
+          { hoveraa: false }
+          );    
+  });
+  size.length=0;
+  test2=[];
+  note.innerHTML="";
+  document.getElementById('pn').value="";
+  
+});
+document.getElementById('zoom2').addEventListener('click',function(){     //저장 버튼
+  var pns=document.getElementById('pn').value;
+  $.ajax({
+    url: "http://localhost:5000/test/dd",
+    type:'POST',
+    traditional:true,
+    async:false,
+    data:{
+      data:test2,
+      pn:pns
+    },
+  });
+  test2=[];
+  alert("저장되었습니다.");
+});
+var note=document.getElementById('note');
+function pluselayer(data,sourcename,lineid,linecolor,fillid,fillcolor){
+  
+  map.addSource(sourcename, {
+    'type': "geojson",
+    'data':data
+  });
+  map.addLayer({
+      'id': lineid,
+      'type': 'line',
+      'minzoom':18,
+      'source': sourcename,
+      'paint': {
+          'line-color': linecolor,
+      }});
+  map.addLayer({
+    'id': fillid,
+    'type': 'fill',
+    'minzoom':18,
+    'source': sourcename,
+    'layout': {
+
+    },
+    'paint': {
+    'fill-color': fillcolor,
+    'fill-opacity': [
+    'case',
+    ['boolean', ['feature-state', 'hover'], false],
+    1,
+    0
+    ]
+    }
+  });
+};
+map.boxZoom.disable();
+map.on('load', function() {
+  //시작
+  dragevent();
+
+ //끝
 
   //-----------------로딩 됬을때 화면 출력-------------------------------
 var bounds = map.getBounds();
@@ -386,7 +388,7 @@ pluselayer(db,'db','db','gray','db-fill','gray');
 map.addLayer({                 // 빈 그리드 텍스트 값 넣기
   'filter': ["all", ["==", "$type", "Polygon"]],
   'id': 'aa',
-  'minzoom':19,
+  'minzoom':18,
   'type': 'symbol',
   'source': "db",
   'layout': {
@@ -404,6 +406,7 @@ map.addSource('db2', {    //구매 그리드 데이터 소스추가
 map.addLayer({      // 구매 그리드 선 그리기
   'id': 'db2',
   'type': 'line',
+  'minzoom':18,
   'source': 'db2',
   'paint': {
       'line-color': 'gray',
@@ -411,6 +414,7 @@ map.addLayer({      // 구매 그리드 선 그리기
 map.addLayer({         //구매 그리드 빨간색 채우기
   'id': 'db2-fill',
   'type': 'fill',
+  'minzoom':18,
   'source': 'db2',
   'layout': {
 
@@ -428,6 +432,7 @@ map.addLayer({         //구매 그리드 빨간색 채우기
 map.addLayer({          //구매 그리드 이미지 없는값 클릭시 초록색 채우기 이벤트
   'id': 'db2-fill2',
   'type': 'fill',
+  'minzoom':18,
   'source': 'db2',
   'layout': {
 
@@ -445,7 +450,7 @@ map.addLayer({          //구매 그리드 이미지 없는값 클릭시 초록�
 map.addLayer({ // 구매 그리드 안 텍스트 값 넣기
   'filter': ["all", ["==", "$type", "Polygon"]],
   'id': 'aa2',
-  'minzoom':19,
+  'minzoom':18,
   'type': 'symbol',
   'source': "db2",
   'layout': {
@@ -456,9 +461,9 @@ map.addLayer({ // 구매 그리드 안 텍스트 값 넣기
   'text-color':"#fff"
   }
 });
-map.addLayer({ // 구매 그리드 안 이미지 넣기
+map.addLayer({ // 구매 그리드 안 이미지(국기) 넣기
   'id': "pattern-layer",
-  'minzoom':19,
+  'minzoom':18,
   'type': "symbol",
   'source': "db2",
   'layout': {
@@ -466,7 +471,7 @@ map.addLayer({ // 구매 그리드 안 이미지 넣기
     "icon-image": ['get', 'f3'], // reference the image
     "icon-size": {
       stops: [
-        [18, 0.2],
+        [18, 0.125],
         [20, 0.3],
       ],
     },
@@ -599,8 +604,15 @@ for(let i=0;i<db2["features"].length;i++){
 
 
 
-  map.on('moveend', () => {           
+  map.on('moveend', () => {         
+
+    var getzoom= map.getZoom(); 
+    if(getzoom <18){
+
+    }
+    else{
     var bounds = map.getBounds();
+    
     bound={
       xmin:bounds._sw.lng,
       xmax:bounds._ne.lng,
@@ -653,7 +665,7 @@ for(let i=0;i<db2["features"].length;i++){
     map.addLayer({                 // 빈 그리드 텍스트 값 넣기
       'filter': ["all", ["==", "$type", "Polygon"]],
       'id': 'aa',
-      'minzoom':19,
+      'minzoom':18,
       'type': 'symbol',
       'source': "db",
       'layout': {
@@ -670,6 +682,7 @@ for(let i=0;i<db2["features"].length;i++){
     });
     map.addLayer({      // 구매 그리드 선 그리기
       'id': 'db2',
+      'minzoom':18,
       'type': 'line',
       'source': 'db2',
       'paint': {
@@ -678,6 +691,7 @@ for(let i=0;i<db2["features"].length;i++){
     map.addLayer({         //구매 그리드 빨간색 채우기
       'id': 'db2-fill',
       'type': 'fill',
+      'minzoom':18,
       'source': 'db2',
       'layout': {
   
@@ -695,6 +709,7 @@ for(let i=0;i<db2["features"].length;i++){
     map.addLayer({          //구매 그리드 이미지 없는값 클릭시 초록색 채우기 이벤트
       'id': 'db2-fill2',
       'type': 'fill',
+      'minzoom':18,
       'source': 'db2',
       'layout': {
   
@@ -712,7 +727,7 @@ for(let i=0;i<db2["features"].length;i++){
     map.addLayer({ // 구매 그리드 안 텍스트 값 넣기
       'filter': ["all", ["==", "$type", "Polygon"]],
       'id': 'aa2',
-      'minzoom':19,
+      'minzoom':18,
       'type': 'symbol',
       'source': "db2",
       'layout': {
@@ -725,7 +740,7 @@ for(let i=0;i<db2["features"].length;i++){
     });
     map.addLayer({ // 구매 그리드 안 이미지 넣기
       'id': "pattern-layer",
-      'minzoom':19,
+      'minzoom':18,
       'type': "symbol",
       'source': "db2",
       'layout': {
@@ -733,7 +748,7 @@ for(let i=0;i<db2["features"].length;i++){
         "icon-image": ['get', 'f3'], // reference the image
         "icon-size": {
           stops: [
-            [18, 0.2],
+            [18, 0.125],
             [20, 0.3],
           ],
         },
@@ -760,14 +775,15 @@ for(let i=0;i<db2["features"].length;i++){
       }
     }
     }
+    }
+    
 
 
 
     });
   
-});
-
   
+});
 var geocoder = new MapboxGeocoder({
 accessToken: mapboxgl.accessToken,
 mapboxgl: mapboxgl,
@@ -775,7 +791,6 @@ mapboxgl: mapboxgl,
 // 검색창 생성
 
 document.getElementById("geocoder").appendChild(geocoder.onAdd(map)); // 검색창 넣기
-
 map.addControl(new mapboxgl.NavigationControl()); //지도 탐색 컨트롤 표시
 
 
