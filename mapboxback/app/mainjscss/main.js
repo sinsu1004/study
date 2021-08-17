@@ -342,10 +342,160 @@ map.on('load', function() {
     map.dragPan.enable();
   }
 
- 
+ //
 
+  //-----------------로딩 됬을때 화면 출력-------------------------------
+var bounds = map.getBounds();
+bound={
+  xmin:bounds._sw.lng,
+  xmax:bounds._ne.lng,
+  ymin:bounds._sw.lat,
+  ymax:bounds._ne.lat,
+
+}
+$.ajax({      //grid 데이터 가져오기
+  url:'http://192.168.219.35:5000/test/data',
+  type:'POST',
+  datatype:'json',
+  async:false,data:{
+    data:bounds
+  },
+  success:function(a){
+    
+    db=a;
+  }
+})
+db=db[0];
+db=db["db"];
+
+$.ajax({     // 구매한 grid 데이터 가져오기
+  url:'http://192.168.219.35:5000/test/data2',
+  type:'POST',
+  datatype:'json',
+  data:{
+    data:bounds
+  },
+  async:false,
+  success:function(a){
+    db2=a;
+  }
+})
+db2=db2[0];
+db2=db2["db"];
+pluselayer(db,'db','db','gray','db-fill','gray');
+map.addLayer({                 // 빈 그리드 텍스트 값 넣기
+  'filter': ["all", ["==", "$type", "Polygon"]],
+  'id': 'aa',
+  'minzoom':19,
+  'type': 'symbol',
+  'source': "db",
+  'layout': {
+      "text-field": ['get', 'f2'],
+      "text-size":10
+  },
+  'paint': {
+  'text-color':"#fff"
+  }
+});
+map.addSource('db2', {    //구매 그리드 데이터 소스추가
+  'type': "geojson",
+  'data':db2
+});
+map.addLayer({      // 구매 그리드 선 그리기
+  'id': 'db2',
+  'type': 'line',
+  'source': 'db2',
+  'paint': {
+      'line-color': 'gray',
+  }});
+map.addLayer({         //구매 그리드 빨간색 채우기
+  'id': 'db2-fill',
+  'type': 'fill',
+  'source': 'db2',
+  'layout': {
+
+  },
+  'paint': {
+  'fill-color': 'red',
+  'fill-opacity': [
+  'case',
+  ['boolean', ['feature-state', 'hover'], true],
+  0.5,
+  0
+  ]
+  }
+});
+map.addLayer({          //구매 그리드 이미지 없는값 클릭시 초록색 채우기 이벤트
+  'id': 'db2-fill2',
+  'type': 'fill',
+  'source': 'db2',
+  'layout': {
+
+  },
+  'paint': {
+  'fill-color': '#00FF00',
+  'fill-opacity': [
+  'case',
+  ['boolean', ['feature-state', 'hoveraa'], false],
+  5,
+  0
+  ]
+  }
+});
+map.addLayer({ // 구매 그리드 안 텍스트 값 넣기
+  'filter': ["all", ["==", "$type", "Polygon"]],
+  'id': 'aa2',
+  'minzoom':19,
+  'type': 'symbol',
+  'source': "db2",
+  'layout': {
+      "text-field": ['get', 'f2'],
+      "text-size":10
+  },
+  'paint': {
+  'text-color':"#fff"
+  }
+});
+map.addLayer({ // 구매 그리드 안 이미지 넣기
+  'id': "pattern-layer",
+  'minzoom':19,
+  'type': "symbol",
+  'source': "db2",
+  'layout': {
+    "icon-allow-overlap": !0,
+    "icon-image": ['get', 'f3'], // reference the image
+    "icon-size": {
+      stops: [
+        [18, 0.2],
+        [20, 0.3],
+      ],
+    },
+  },
+  'paint': {
+    'icon-opacity': [
+    'case',
+    ['boolean', ['feature-state', 'hovera'], false],
+    1,
+    0.5
+    ]
+    }
   
-  //
+});
+
+if(db2['features']!=null){//국기 정보가 있는 유저들 빨간색fill 삭제
+for(let i=0;i<db2["features"].length;i++){    
+  if(db2["features"][i]["properties"].f3!=null){
+    num=db2["features"][i].id;
+  map.setFeatureState(
+    { source: 'db2', id:num },
+    { hover: false }
+    ); 
+  }
+}
+}
+
+  //-------------------------------------------------------------------
+  
   map.on('click','db-fill',function(e){
     if(select==1){
        size.forEach(item=>{
@@ -367,7 +517,7 @@ map.on('load', function() {
     gridname = e.features[0].properties.f2;
     hoveredStateId = e.features[0].id;
     $.ajax({
-    url: "http://172.30.1.7:5000/test/dd2",
+    url: "http://192.168.219.35:5000/test/dd2",
     type:'POST',
     async:false,
     traditional:true,
@@ -446,6 +596,8 @@ map.on('load', function() {
 
   });
 
+
+
   map.on('moveend', () => {           
     var bounds = map.getBounds();
     bound={
@@ -456,7 +608,7 @@ map.on('load', function() {
 
     }
     $.ajax({      //grid 데이터 가져오기
-      url:'http://172.30.1.7:5000/test/data',
+      url:'http://192.168.219.35:5000/test/data',
       type:'POST',
       datatype:'json',
       async:false,data:{
@@ -471,7 +623,7 @@ map.on('load', function() {
     db=db["db"];
 
     $.ajax({     // 구매한 grid 데이터 가져오기
-      url:'http://172.30.1.7:5000/test/data2',
+      url:'http://192.168.219.35:5000/test/data2',
       type:'POST',
       datatype:'json',
       data:{
@@ -484,10 +636,7 @@ map.on('load', function() {
     })
     db2=db2[0];
     db2=db2["db"];
-    if(checkmove==0){
-      checkmove=1;
-    }
-    else{
+    
       map.removeLayer('db');
       map.removeLayer('db-fill');
       map.removeLayer('aa');
@@ -498,7 +647,7 @@ map.on('load', function() {
       map.removeLayer('aa2');
       map.removeLayer('pattern-layer');
       map.removeSource('db2');
-    }
+    
     pluselayer(db,'db','db','gray','db-fill','gray');
     map.addLayer({                 // 빈 그리드 텍스트 값 넣기
       'filter': ["all", ["==", "$type", "Polygon"]],
