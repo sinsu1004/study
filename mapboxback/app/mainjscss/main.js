@@ -62,13 +62,10 @@ function add(x,y,d3id,image) {
   var modelOrigin = [x,y];
   var modelAltitude = 0;
   var modelRotate = [Math.PI / 2, 0, 0];
-
   var modelAsMercatorCoordinate = mapboxgl.MercatorCoordinate.fromLngLat(
     modelOrigin,
     modelAltitude
   );
-
-  // transformation parameters to position, rotate and scale the 3D model onto the map
   var modelTransform = {
     translateX: modelAsMercatorCoordinate.x,
     translateY: modelAsMercatorCoordinate.y,
@@ -81,9 +78,7 @@ function add(x,y,d3id,image) {
      */
     scale: modelAsMercatorCoordinate.meterInMercatorCoordinateUnits(),
   };
-
   var THREE = window.THREE;
-
   var customLayer = {
     id: d3id,
     type: "custom",
@@ -91,15 +86,12 @@ function add(x,y,d3id,image) {
     onAdd: function (map, gl) {
       this.camera = new THREE.Camera();
       this.scene = new THREE.Scene();
-
       var directionalLight = new THREE.DirectionalLight(0xffffff);
       directionalLight.position.set(0, -70, 100).normalize();
       this.scene.add(directionalLight);
-
       var directionalLight2 = new THREE.DirectionalLight(0xffffff);
       directionalLight2.position.set(0, 70, 100).normalize();
       this.scene.add(directionalLight2);
-
       var loader = new THREE.GLTFLoader();
       loader.load(
         image,
@@ -108,14 +100,11 @@ function add(x,y,d3id,image) {
         }.bind(this)
       );
       this.map = map;
-
-      // use the Mapbox GL JS map canvas for three.js
       this.renderer = new THREE.WebGLRenderer({
         canvas: map.getCanvas(),
         context: gl,
         antialias: true,
       });
-
       this.renderer.autoClear = false;
     },
     render: function (gl, matrix) {
@@ -131,7 +120,6 @@ function add(x,y,d3id,image) {
         new THREE.Vector3(0, 0, 1),
         modelTransform.rotateZ
       );
-
       var m = new THREE.Matrix4().fromArray(matrix);
       var l = new THREE.Matrix4()
         .makeTranslation(
@@ -354,7 +342,7 @@ map.on('load', function() {
     map.dragPan.enable();
   }
 
-  //끝
+ 
 
   
   //
@@ -375,9 +363,7 @@ map.on('load', function() {
     note.innerHTML="";
     document.getElementById('pn').value="";
     select=0;
-
     }
-    
     gridname = e.features[0].properties.f2;
     hoveredStateId = e.features[0].id;
     $.ajax({
@@ -469,7 +455,7 @@ map.on('load', function() {
       ymax:bounds._ne.lat,
 
     }
-    $.ajax({
+    $.ajax({      //grid 데이터 가져오기
       url:'http://172.30.1.7:5000/test/data',
       type:'POST',
       datatype:'json',
@@ -484,7 +470,7 @@ map.on('load', function() {
     db=db[0];
     db=db["db"];
 
-    $.ajax({
+    $.ajax({     // 구매한 grid 데이터 가져오기
       url:'http://172.30.1.7:5000/test/data2',
       type:'POST',
       datatype:'json',
@@ -629,23 +615,6 @@ map.on('load', function() {
 
     });
   
-
-  
-
-
-  
-
-  
-
- 
-
-
-
-
-
-  
-
-
 });
 
   
