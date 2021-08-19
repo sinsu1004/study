@@ -3,11 +3,21 @@ const { response, request } = require('express');
 const {Pool}= require('pg');
 const pool=new Pool({
     user: 'postgres',
-    host: 'localhost',
+    host: '192.168.219.9',
     database: 'postgres',
-    password: '5067',
+    password: 'elqpffhr1!',
     port:5432
 })
+// pool.connect((err)=>{
+//     if(err){
+//         console.log("연결실패");
+//         console.log(err);
+//     }
+//     if(!err){
+//         console.log("연결성공");
+//     }
+// })
+
 const buydata=(request,response)=>{
     var data=request.body;
     var td=data["data"];
@@ -46,16 +56,18 @@ const tiledata =(request,response)=>{
 const datatest =(request,response) =>{
     var data=request.body;
     var id=Object.values(data);
-    pool.query('select row_to_json(fc) as db from (select \'FeatureCollection\' AS type, json_build_object(\'type\',\'name\',\'properties\', json_build_object(\'name\',\'EPSG:4326\')) as crs, array_to_json(array_agg(f)) as features from (select \'Feature\' as type,  st_asGeoJson(st_setsrid(((st_dump(geom)).geom::geometry),4326),100)::json as geometry ,row_to_json((gid, pagename,buy)) AS properties,gid AS ID  from aa where geom && ST_MakeEnvelope( $1, $2, $3 ,$4 , 4326)) as f) as fc',[id[0],id[1],id[2],id[3]],(error, results) =>{
+    pool.query('select row_to_json(fc) as db from (select \'FeatureCollection\' AS type, json_build_object(\'type\',\'name\',\'properties\', json_build_object(\'name\',\'EPSG:4326\')) as crs, array_to_json(array_agg(f)) as features from (select \'Feature\' as type,  st_asGeoJson(st_setsrid(((st_dump(geom)).geom::geometry),4326),100)::json as geometry ,row_to_json((gid, pagename)) AS properties,gid AS ID  from zq_world.data_1 where geom && ST_MakeEnvelope( $1, $2, $3 ,$4 , 4326)) as f) as fc',[id[0],id[1],id[2],id[3]],(error, results) =>{
         response.status(200).json(results.rows);
+        
     });
+    
 }
 
 const userdata =(request,response) =>{
     var data=request.body;
     var id=Object.values(data);
     
-    pool.query('select row_to_json(fc) as db from (select \'FeatureCollection\' AS type, json_build_object(\'type\',\'name\',\'properties\', json_build_object(\'name\',\'EPSG:4326\')) as crs, array_to_json(array_agg(f)) as features from (select \'Feature\' as type,  st_asGeoJson(st_setsrid(((st_dump(geom)).geom::geometry),4326),100)::json as geometry ,row_to_json((gid, pagename,country)) AS properties,gid AS ID  from aa2 where geom && ST_MakeEnvelope( $1, $2, $3 ,$4 , 4326)) as f) as fc',[id[0],id[1],id[2],id[3]],(error, results) =>{
+    pool.query('select row_to_json(fc) as db from (select \'FeatureCollection\' AS type, json_build_object(\'type\',\'name\',\'properties\', json_build_object(\'name\',\'EPSG:4326\')) as crs, array_to_json(array_agg(f)) as features from (select \'Feature\' as type,  st_asGeoJson(st_setsrid(((st_dump(geom)).geom::geometry),4326),100)::json as geometry ,row_to_json((gid, pagename)) AS properties,gid AS ID  from zq_world.data_2 where geom && ST_MakeEnvelope( $1, $2, $3 ,$4 , 4326)) as f) as fc',[id[0],id[1],id[2],id[3]],(error, results) =>{
         response.status(200).json(results.rows);
     });
 }

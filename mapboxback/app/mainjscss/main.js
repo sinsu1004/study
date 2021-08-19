@@ -5,8 +5,9 @@ mapboxgl.accessToken =
 var map = new mapboxgl.Map({
 container: "map", // container id
 style: "mapbox://styles/shinseunghun/ckqqa24e22qdh17q0k9fh7bnj", // style URL
-center: [127.01853668157793, 37.5050814988523], // starting position [lng, lat]
-zoom:18, // starting zoom
+center: [127.364233, 38.317115], // starting position [lng, lat]
+//127.01853668157793,37.5050814988523
+zoom:16, // starting zoom
 });
 var db;
 var db2;
@@ -14,7 +15,10 @@ var hoveredStateId = null;
 var gridname;
 var test2=new Array();
 var connect;
+var confirm1=0;
+var confirm2=0;
 var select=0;
+const zooms=16;
 var hoho=0;
 const bounds =[
   [122.97269551925706,33.06751550443434],
@@ -306,7 +310,7 @@ document.getElementById('zoom2').addEventListener('click',function(){     //저�
   alert("저장되었습니다.");
 });
 var note=document.getElementById('note');
-function pluselayer(data,sourcename,lineid,linecolor,fillid,fillcolor){
+function addgrid(data,sourcename,lineid,linecolor,zoom){
   
   map.addSource(sourcename, {
     'type': "geojson",
@@ -315,15 +319,17 @@ function pluselayer(data,sourcename,lineid,linecolor,fillid,fillcolor){
   map.addLayer({
       'id': lineid,
       'type': 'line',
-      'minzoom':18,
+      'minzoom':zoom,
       'source': sourcename,
       'paint': {
           'line-color': linecolor,
       }});
+};
+function addfillevent(sourcename,fillid,fillcolor,zoom,boolean,max,min){
   map.addLayer({
     'id': fillid,
     'type': 'fill',
-    'minzoom':18,
+    'minzoom':zoom,
     'source': sourcename,
     'layout': {
 
@@ -332,22 +338,65 @@ function pluselayer(data,sourcename,lineid,linecolor,fillid,fillcolor){
     'fill-color': fillcolor,
     'fill-opacity': [
     'case',
-    ['boolean', ['feature-state', 'hover'], false],
-    1,
-    0
+    ['boolean', ['feature-state', 'hover'], boolean],
+    max,
+    min
     ]
     }
   });
 };
+function addtextevent(sourcename,id,textcolor,textsize){
+  map.addLayer({ // 구매 그리드 안 텍스트 값 넣기
+    'filter': ["all", ["==", "$type", "Polygon"]],
+    'id': id,
+    'minzoom':14,
+    'type': 'symbol',
+    'source': sourcename,
+    'layout': {
+        "text-field": ['get', 'f2'],
+        "text-size":textsize
+    },
+    'paint': {
+    'text-color':textcolor
+    }
+  });
+};
+function addimageevent(sourcename,id,zoom){
+  map.addLayer({ 
+    'id': id,
+    'minzoom':zoom,
+    'type': "symbol",
+    'source': sourcename,
+    'layout': {
+      "icon-allow-overlap": !0,
+      "icon-image": ['get', 'f3'], 
+      "icon-size": {
+        stops: [
+          [18, 0.125],
+          [20, 0.3],
+        ],
+      },
+    },
+    'paint': {
+      'icon-opacity': [
+      'case',
+      ['boolean', ['feature-state', 'hovera'], false],
+      1,
+      0.5
+      ]
+      }
+    
+  });
+}
 map.boxZoom.disable();
 map.on('load', function() {
   //시작
   dragevent();
-
  //끝
 
   //-----------------로딩 됬을때 화면 출력-------------------------------
 var bounds = map.getBounds();
+console.log(bounds);
 bound={
   xmin:bounds._sw.lng,
   xmax:bounds._ne.lng,
@@ -384,120 +433,37 @@ $.ajax({     // 구매한 grid 데이터 가져오기
 })
 db2=db2[0];
 db2=db2["db"];
-pluselayer(db,'db','db','gray','db-fill','gray');
-map.addLayer({                 // 빈 그리드 텍스트 값 넣기
-  'filter': ["all", ["==", "$type", "Polygon"]],
-  'id': 'aa',
-  'minzoom':18,
-  'type': 'symbol',
-  'source': "db",
-  'layout': {
-      "text-field": ['get', 'f2'],
-      "text-size":10
-  },
-  'paint': {
-  'text-color':"#fff"
-  }
-});
-map.addSource('db2', {    //구매 그리드 데이터 소스추가
-  'type': "geojson",
-  'data':db2
-});
-map.addLayer({      // 구매 그리드 선 그리기
-  'id': 'db2',
-  'type': 'line',
-  'minzoom':18,
-  'source': 'db2',
-  'paint': {
-      'line-color': 'gray',
-  }});
-map.addLayer({         //구매 그리드 빨간색 채우기
-  'id': 'db2-fill',
-  'type': 'fill',
-  'minzoom':18,
-  'source': 'db2',
-  'layout': {
-
-  },
-  'paint': {
-  'fill-color': 'red',
-  'fill-opacity': [
-  'case',
-  ['boolean', ['feature-state', 'hover'], true],
-  0.5,
-  0
-  ]
-  }
-});
-map.addLayer({          //구매 그리드 이미지 없는값 클릭시 초록색 채우기 이벤트
-  'id': 'db2-fill2',
-  'type': 'fill',
-  'minzoom':18,
-  'source': 'db2',
-  'layout': {
-
-  },
-  'paint': {
-  'fill-color': '#00FF00',
-  'fill-opacity': [
-  'case',
-  ['boolean', ['feature-state', 'hoveraa'], false],
-  5,
-  0
-  ]
-  }
-});
-map.addLayer({ // 구매 그리드 안 텍스트 값 넣기
-  'filter': ["all", ["==", "$type", "Polygon"]],
-  'id': 'aa2',
-  'minzoom':18,
-  'type': 'symbol',
-  'source': "db2",
-  'layout': {
-      "text-field": ['get', 'f2'],
-      "text-size":10
-  },
-  'paint': {
-  'text-color':"#fff"
-  }
-});
-map.addLayer({ // 구매 그리드 안 이미지(국기) 넣기
-  'id': "pattern-layer",
-  'minzoom':18,
-  'type': "symbol",
-  'source': "db2",
-  'layout': {
-    "icon-allow-overlap": !0,
-    "icon-image": ['get', 'f3'], // reference the image
-    "icon-size": {
-      stops: [
-        [18, 0.125],
-        [20, 0.3],
-      ],
-    },
-  },
-  'paint': {
-    'icon-opacity': [
-    'case',
-    ['boolean', ['feature-state', 'hovera'], false],
-    1,
-    0.5
-    ]
-    }
-  
-});
-
-if(db2['features']!=null){//국기 정보가 있는 유저들 빨간색fill 삭제
-for(let i=0;i<db2["features"].length;i++){    
-  if(db2["features"][i]["properties"].f3!=null){
-    num=db2["features"][i].id;
-  map.setFeatureState(
-    { source: 'db2', id:num },
-    { hover: false }
-    ); 
-  }
+if(db['features']!=null){
+  addgrid(db,'db','db','gray',zooms);
+  addfillevent('db','db-fill','gray',zooms,false,1,0);
+  addtextevent('db','text','#fff',10); // 빈 그리드 텍스트 값 넣기
 }
-} 
+else{
+  confirm1=1;
+}
+if(db2['features']!=null){
+  addgrid(db2,'db2','db2','gray',zooms);
+  addfillevent('db2','db2-fill','red',zooms,true,0.5,0);
+  addfillevent('db2','db2-fill2','#00FF00',zooms,false,5,0);
+  addtextevent('db2','text2','#fff',10);// 구매 그리드 안 텍스트 값 넣기
+  addimageevent('db2','pattern-layer',zooms);// 구매 그리드 안 이미지(국기) 넣기
+  if(db2['features']!=null){//국기 정보가 있는 유저들 빨간색fill 삭제
+    for(let i=0;i<db2["features"].length;i++){    
+      if(db2["features"][i]["properties"].f3!=null){
+        num=db2["features"][i].id;
+      map.setFeatureState(
+        { source: 'db2', id:num },
+        { hover: false }
+        ); 
+      }
+    }
+    } ;
+
+}
+else{
+  confirm2=1;
+}
+
 
 
   //-------------------------------------------------------------------
@@ -607,7 +573,7 @@ for(let i=0;i<db2["features"].length;i++){
   map.on('moveend', () => {         
 
     var getzoom= map.getZoom(); 
-    if(getzoom <18){
+    if(getzoom <zooms){
 
     }
     else{
@@ -649,120 +615,36 @@ for(let i=0;i<db2["features"].length;i++){
     })
     db2=db2[0];
     db2=db2["db"];
-    
+    if(confirm1==0){
       map.removeLayer('db');
       map.removeLayer('db-fill');
-      map.removeLayer('aa');
+      map.removeLayer('text');
       map.removeSource('db');
+    }
+    if(confirm2==0){
       map.removeLayer('db2');
       map.removeLayer('db2-fill');
       map.removeLayer('db2-fill2');
-      map.removeLayer('aa2');
+      map.removeLayer('text2');
       map.removeLayer('pattern-layer');
       map.removeSource('db2');
-    
-    pluselayer(db,'db','db','gray','db-fill','gray');
-    map.addLayer({                 // 빈 그리드 텍스트 값 넣기
-      'filter': ["all", ["==", "$type", "Polygon"]],
-      'id': 'aa',
-      'minzoom':18,
-      'type': 'symbol',
-      'source': "db",
-      'layout': {
-          "text-field": ['get', 'f2'],
-          "text-size":10
-      },
-      'paint': {
-      'text-color':"#fff"
-      }
-    });
-    map.addSource('db2', {    //구매 그리드 데이터 소스추가
-      'type': "geojson",
-      'data':db2
-    });
-    map.addLayer({      // 구매 그리드 선 그리기
-      'id': 'db2',
-      'minzoom':18,
-      'type': 'line',
-      'source': 'db2',
-      'paint': {
-          'line-color': 'gray',
-      }});
-    map.addLayer({         //구매 그리드 빨간색 채우기
-      'id': 'db2-fill',
-      'type': 'fill',
-      'minzoom':18,
-      'source': 'db2',
-      'layout': {
-  
-      },
-      'paint': {
-      'fill-color': 'red',
-      'fill-opacity': [
-      'case',
-      ['boolean', ['feature-state', 'hover'], true],
-      0.5,
-      0
-      ]
-      }
-    });
-    map.addLayer({          //구매 그리드 이미지 없는값 클릭시 초록색 채우기 이벤트
-      'id': 'db2-fill2',
-      'type': 'fill',
-      'minzoom':18,
-      'source': 'db2',
-      'layout': {
-  
-      },
-      'paint': {
-      'fill-color': '#00FF00',
-      'fill-opacity': [
-      'case',
-      ['boolean', ['feature-state', 'hoveraa'], false],
-      5,
-      0
-      ]
-      }
-    });
-    map.addLayer({ // 구매 그리드 안 텍스트 값 넣기
-      'filter': ["all", ["==", "$type", "Polygon"]],
-      'id': 'aa2',
-      'minzoom':18,
-      'type': 'symbol',
-      'source': "db2",
-      'layout': {
-          "text-field": ['get', 'f2'],
-          "text-size":10
-      },
-      'paint': {
-      'text-color':"#fff"
-      }
-    });
-    map.addLayer({ // 구매 그리드 안 이미지 넣기
-      'id': "pattern-layer",
-      'minzoom':18,
-      'type': "symbol",
-      'source': "db2",
-      'layout': {
-        "icon-allow-overlap": !0,
-        "icon-image": ['get', 'f3'], // reference the image
-        "icon-size": {
-          stops: [
-            [18, 0.125],
-            [20, 0.3],
-          ],
-        },
-      },
-      'paint': {
-        'icon-opacity': [
-        'case',
-        ['boolean', ['feature-state', 'hovera'], false],
-        1,
-        0.5
-        ]
-        }
-      
-    });
+    }
+    confirm1=0;
+    confirm2=0;
+    if(db['features']!=null){
+    addgrid(db,'db','db','gray',zooms);
+    addfillevent('db','db-fill','gray',zooms,false,1,0);
+    addtextevent('db','text','#fff',10); // 빈 그리드 텍스트 값 넣기
+    }
+    else{
+      confirm1=1;
+    }
+    if(db2['features']!=null){
+    addgrid(db2,'db2','db2','gray',zooms);//구매 그리드 데이터 소스추가,구매 그리드 선 그리기
+    addfillevent('db2','db2-fill','red',zooms,true,0.5,0);//구매 그리드 빨간색 채우기
+    addfillevent('db2','db2-fill2','#00FF00',zooms,false,5,0); //구매 그리드 이미지 없는값 클릭시 초록색 채우기 이벤트
+    addtextevent('db2','text2','#fff',10);// 구매 그리드 안 텍스트 값 넣기
+    addimageevent('db2','pattern-layer',zooms);// 구매 그리드 안 이미지(국기) 넣기
    
     if(db2['features']!=null){//국기 정보가 있는 유저들 빨간색fill 삭제
     for(let i=0;i<db2["features"].length;i++){    
@@ -775,6 +657,12 @@ for(let i=0;i<db2["features"].length;i++){
       }
     }
     }
+    }
+
+    else{
+      confirm2=1;
+    }
+
     }
     
 
