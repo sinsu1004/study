@@ -17,13 +17,29 @@ const pool=new Pool({
 //         console.log("연결성공");
 //     }
 // })
+const citydata=(request,response)=>{
+    for(let i=1;i<5000;i++){
+    pool.query('SELECT pagenumber FROM zq_world.data_1 WHERE gid = (SELECT c.gid FROM (SELECT * FROM zq_world.data_1 WHERE gid=$1) c WHERE TRUE = (SELECT (st_contains(a.geom ,b.geom)) s FROM (SELECT * FROM zq_world.data_1 WHERE gid=$1) b,(SELECT * FROM zq_world.koreashp WHERE gid=$2) a))',[i,1],(error, results) => {
+        if(results.rows!=''){
+        pool.query('insert into zq_world.seoul_data_1 (pagenumber,city) values ($1,$2)',[results.rows[0]["pagenumber"],"seoul"],(error, results) => {
+            
+        })
+        }
+        else{
+            
+            }
+    });
+    }
+    
+
+}
 
 const buydata=(request,response)=>{
     var data=request.body;
     var td=data["data"];
-
-    pool.query('select username from aa2 where pagename=$1',[td],(error, results) => {
-    
+    console.log(td);
+    pool.query('select username from zq_world.data_1 where pagename=$1',[td],(error, results) => {
+        console.log(error);
         if(results.rows!=''){
                 var ho=results.rows[0]["username"];
                 pool.query('select pagename,gid,username,country from aa2 where username=$1',[ho],(error,results)=>{
@@ -80,5 +96,6 @@ module.exports ={
     tiledata,
     buydata,
     userdata,
+    citydata,
   
 };

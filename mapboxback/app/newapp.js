@@ -13,13 +13,12 @@ const options = {
   key: fs.readFileSync(__dirname+'/ssl/private.pem'),
   cert: fs.readFileSync(__dirname+'/ssl/public.pem')
 
-};
+}; 
 
 app.use(express.json());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cors());
-
 
 app.listen(port, () => {
     console.log(`Horror movie app is running on port ${port}.`);

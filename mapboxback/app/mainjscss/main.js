@@ -486,6 +486,7 @@ else{
     document.getElementById('pn').value="";
     select=0;
     }
+    
     gridname = e.features[0].properties.f2;
     hoveredStateId = e.features[0].id;
     $.ajax({
@@ -615,7 +616,7 @@ else{
     })
     db2=db2[0];
     db2=db2["db"];
-    if(confirm1==0){
+    if(confirm1==0){ //삭제코드
       map.removeLayer('db');
       map.removeLayer('db-fill');
       map.removeLayer('text');
